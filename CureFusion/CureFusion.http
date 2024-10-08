@@ -1,0 +1,6 @@
+@CureFusion_HostAddress = http://localhost:5264
+
+GET {{CureFusion_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
