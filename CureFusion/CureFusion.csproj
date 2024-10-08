@@ -10,4 +10,11 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0-rc.1.24452.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Abstactions\" />
+    <Folder Include="Entities\" />
+    <Folder Include="Persistence\" />
+    <Folder Include="Services\" />
+  </ItemGroup>
+
 </Project>
