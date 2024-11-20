@@ -21,8 +21,12 @@
   <ItemGroup>
     <Folder Include="Abstactions\" />
     <Folder Include="Entities\" />
+    <Folder Include="Errors\" />
+    <Folder Include="Extensions\" />
+    <Folder Include="Helpers\" />
     <Folder Include="Persistence\" />
     <Folder Include="Services\" />
+    <Folder Include="Settings\" />
   </ItemGroup>
 
 </Project>
