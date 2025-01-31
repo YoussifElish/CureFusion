@@ -1,5 +1,4 @@
 ﻿using CureFusion.Persistence;
-using Microsoft.EntityFrameworkCore;
 
 namespace CureFusion;
 

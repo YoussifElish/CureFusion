@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-
-namespace CureFusion.Entities;
+﻿namespace CureFusion.Entities;
 
 public class ApplicationRole : IdentityRole
 {

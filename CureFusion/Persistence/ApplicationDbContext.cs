@@ -1,11 +1,4 @@
-﻿using CureFusion.Entities;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
-using System.Reflection.Emit;
-using System.Reflection;
-
-namespace CureFusion.Persistence;
+﻿namespace CureFusion.Persistence;
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options,IHttpContextAccessor httpContextAccessor ) : IdentityDbContext<ApplicationUser,ApplicationRole,string>(options)
 {

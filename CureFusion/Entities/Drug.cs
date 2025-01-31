@@ -1,0 +1,10 @@
+﻿namespace CureFusion.Entities;
+
+public class Drug
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string SideEffect { get; set; } = string.Empty;
+    public int Dosage { get; set; }
+    public string Interaction { get; set; }=string.Empty;
+}
