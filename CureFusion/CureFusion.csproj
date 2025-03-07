@@ -4,18 +4,27 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>79b689aa-de8f-464b-9476-561af5d91b86</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
 
+    <Compile Remove="Persistence\EntitiesConfiguration\**" />
+
     <Compile Remove="`\**" />
+
+    <Content Remove="Persistence\EntitiesConfiguration\**" />
     <Content Remove="`\**" />
+    <EmbeddedResource Remove="Persistence\EntitiesConfiguration\**" />
     <EmbeddedResource Remove="`\**" />
+    <None Remove="Persistence\EntitiesConfiguration\**" />
     <None Remove="`\**" />
   </ItemGroup>
 
   <ItemGroup>
+     <PackageReference Include="FluentValidation" Version="11.11.0" />
      <PackageReference Include="Mapster" Version="7.4.2-pre02" />
+     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.2" />
      <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.0" />
      <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0-rc.1.24452.1" />
      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
@@ -29,12 +38,9 @@
 
   <ItemGroup>
     <Folder Include="Abstactions\" />
-    <Folder Include="Controllers\" />
     <Folder Include="Errors\" />
     <Folder Include="Extensions\" />
     <Folder Include="Helpers\" />
-    <Folder Include="Persistence\EntitiesConfiguration\" />
-    <Folder Include="Services\" />
     <Folder Include="Settings\" />
   </ItemGroup>
 

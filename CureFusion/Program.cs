@@ -1,4 +1,3 @@
-using CureFusion;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -4,9 +4,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 {
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
-
-
-
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
@@ -15,6 +12,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             fk.DeleteBehavior = DeleteBehavior.Restrict;
         base.OnModelCreating(builder);
     }
+    public DbSet<Patient> Patients { get; set; }
+    public DbSet<Doctor> Doctors { get; set; }
+    public DbSet<HealthArticle> HealthArticles { get; set; } 
     public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
         var entries = ChangeTracker.Entries<AuditableEntity>();
