@@ -41,6 +41,32 @@ public class JwtProvider(IOptions<JwtOptions> JwtOptions) : IJwtProvider
 
     public string? ValidateToken(string token)
     {
-        throw new NotImplementedException();
+        var TokenHandler = new JwtSecurityTokenHandler();
+
+        var symmetricsecuritykey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
+
+        try
+        {
+            TokenHandler.ValidateToken(token, new TokenValidationParameters
+            {
+
+                IssuerSigningKey= symmetricsecuritykey,
+                ValidateIssuerSigningKey=true,
+                ValidateIssuer=false,
+                ValidateAudience=false,
+                ClockSkew=TimeSpan.Zero,
+
+
+            }, out SecurityToken validatedToken);
+
+         var JwtToken=(JwtSecurityToken)validatedToken;
+            return JwtToken.Claims.First(x=>x.Type==JwtRegisteredClaimNames.Sub).Value;
+
+        }
+        catch 
+        {
+
+            return null;
+        }
     }
 }

@@ -7,4 +7,6 @@ public class ApplicationUser : IdentityUser
     public bool IsDisabled { get; set; }
     public DateOnly DOB { get; set; }
 
+    public List<RefreshTokens> RefreshTokens { get; set; } = [];
+
 }

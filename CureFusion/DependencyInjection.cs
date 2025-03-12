@@ -2,9 +2,15 @@
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddDependencies (this IServiceCollection services,IConfiguration config)
+    public static IServiceCollection AddDependencies(this IServiceCollection services, IConfiguration config)
     {
-    
+
+
+        services.AddCors(options => options.AddDefaultPolicy(
+                         builder => builder
+                         .WithOrigins("https://localhost:7086")
+                         .AllowAnyHeader()
+                         .AllowAnyMethod()));
 
         services.AddDatabaseConnection (config);
         services.AddAuthConfig(config);
