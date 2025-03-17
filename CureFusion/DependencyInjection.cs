@@ -4,8 +4,6 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddDependencies(this IServiceCollection services, IConfiguration config)
     {
-
-
         services.AddCors(options => options.AddDefaultPolicy(
                          builder => builder
                          .WithOrigins("https://localhost:7086")
@@ -18,9 +16,7 @@ public static class DependencyInjection
 
         services.AddScoped<IAuthService, AuthService>();
 
-
         return services;
-
     }
 
 

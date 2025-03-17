@@ -10,7 +10,8 @@ public class AuthController(IAuthService authService, IOptions<JwtOptions> JwtOp
     public async Task<IActionResult> LoginAsync(Loginrequest request, CancellationToken cancellationToken)
     {
         var AuthResult = await _authService.GetTokenAsync(request.Email, request.Password, cancellationToken); 
-        return AuthResult is null? BadRequest("invalid email/password"):Ok(AuthResult);
+
+        return AuthResult.IsSuccess? Ok(AuthResult.Value):BadRequest(AuthResult.Error);
     }
     [HttpPost("refresh")]
     public async Task<IActionResult> RefreshAsync([FromBody] RefreshTokenRequest request, CancellationToken CT)

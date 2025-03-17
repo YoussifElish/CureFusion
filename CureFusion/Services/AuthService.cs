@@ -1,4 +1,5 @@
 ﻿using System.Security.Cryptography;
+using CureFusion.Abstactions;
 using CureFusion.Entities;
 using Microsoft.AspNetCore.Identity;
 
@@ -11,17 +12,18 @@ public class AuthService(UserManager<ApplicationUser> userManager,IJwtProvider j
 
     private readonly int _refreshtokenexpirydate = 14;
 
-    public async Task<AuthResponse?> GetTokenAsync(string Email, string Password, CancellationToken cancellationToken = default)
+    public async Task<Result<AuthResponse>> GetTokenAsync(string Email, string Password, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByEmailAsync(Email);
 
         if (user is null)
 
-            return null;
+            return Result.Failure<AuthResponse>(new Error("invalid credentials","invalud username or password"));
 
         var isvalidpassword=await _userManager.CheckPasswordAsync(user, Password);
 
-        if (!isvalidpassword) return null;
+        if (!isvalidpassword) return Result.Failure<AuthResponse>(new Error("invalid credentials", "invalud username or password"));
+
 
         var (token, ExpiresIn) = _jwtProvider.GenerateToken(user);
 
@@ -35,14 +37,15 @@ public class AuthService(UserManager<ApplicationUser> userManager,IJwtProvider j
             ExpiresOn= RefreshTokenExpiration
         });
         await _userManager.UpdateAsync(user);
-        return new AuthResponse(user.Id, Email, user.FirstName, user.LastName,token,ExpiresIn, RefreshToken,
+        var response= new AuthResponse(user.Id, Email, user.FirstName, user.LastName, token, ExpiresIn, RefreshToken,
             RefreshTokenExpiration);
+        return Result.Success(response);
 
 
     }
   
 
-    public async Task<AuthResponse?> GetRefreshTokenAsync(string Token, string RefreshToken, CancellationToken cancellationToken = default)
+    public async Task<Result<AuthResponse>> GetRefreshTokenAsync(string Token, string RefreshToken, CancellationToken cancellationToken = default)
     {
         var UserId = _jwtProvider.ValidateToken(Token);
         if (UserId is null)
@@ -71,9 +74,9 @@ public class AuthService(UserManager<ApplicationUser> userManager,IJwtProvider j
             ExpiresOn = RefreshtokenExpiration
         });
         await _userManager.UpdateAsync(user);
+        var response= new AuthResponse(user.Id, user.Email, user.FirstName, user.LastName, newtoken, ExpiresIn, newRefreshtoken, RefreshtokenExpiration);
 
-       return new AuthResponse(user.Id, user.Email, user.FirstName, user.LastName, newtoken, ExpiresIn, newRefreshtoken, RefreshtokenExpiration);
-
+        return Result.Success(response);
     }
 
     private static string GenerateRefreshToken()
