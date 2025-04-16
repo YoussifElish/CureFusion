@@ -18,6 +18,7 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
         services.AddMapsterConfig();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IAppointmentService, AppointmentService>();
 
         return services;
     }
