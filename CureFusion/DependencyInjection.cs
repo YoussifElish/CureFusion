@@ -1,4 +1,7 @@
-﻿namespace CureFusion;
+﻿using Mapster;
+using MapsterMapper;
+
+namespace CureFusion;
 
 public static class DependencyInjection
 {
@@ -13,7 +16,7 @@ public static class DependencyInjection
         services.AddDatabaseConnection (config);
         services.AddAuthConfig(config);
         services.AddHttpContextAccessor();
-
+        services.AddMapsterConfig();
         services.AddScoped<IAuthService, AuthService>();
 
         return services;
@@ -27,7 +30,17 @@ public static class DependencyInjection
 
         return services;
     }
-     
+
+
+    private static IServiceCollection AddMapsterConfig(this IServiceCollection services)
+    {
+        var mappingConfig = TypeAdapterConfig.GlobalSettings;
+        mappingConfig.Scan(Assembly.GetExecutingAssembly());
+        services.AddSingleton<IMapper>(new Mapper(mappingConfig));
+
+        return services;
+    }
+
     private static IServiceCollection AddAuthConfig(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddIdentity<ApplicationUser, IdentityRole>()
