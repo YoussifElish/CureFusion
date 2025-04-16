@@ -11,7 +11,7 @@ public class JwtOptions
     [Required]
     public string Audience { get; init; } = string.Empty;
     [Range(1,int.MaxValue)]
-    public int ExpireyMinutes { get; init; }
+    public int ExpiryMinutes { get; init; }
 
 
     public static string SectionName = "Jwt";

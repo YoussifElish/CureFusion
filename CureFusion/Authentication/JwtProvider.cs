@@ -22,7 +22,7 @@ public class JwtProvider(IOptions<JwtOptions> JwtOptions) : IJwtProvider
         var signingcredetials = new SigningCredentials(symmetricsecuritykey, SecurityAlgorithms.HmacSha256);
 
 
-        var expirationdate = DateTime.UtcNow.AddMinutes(_jwtOptions.ExpireyMinutes);
+        var expirationdate = DateTime.UtcNow.AddMinutes(_jwtOptions.ExpiryMinutes);
 
         var token = new JwtSecurityToken
             (
@@ -35,7 +35,7 @@ public class JwtProvider(IOptions<JwtOptions> JwtOptions) : IJwtProvider
 
             );
 
-        return (token: new JwtSecurityTokenHandler().WriteToken(token), expiresin: _jwtOptions.ExpireyMinutes * 60);
+        return (token: new JwtSecurityTokenHandler().WriteToken(token), expiresin: _jwtOptions.ExpiryMinutes * 60);
     }
     
 
