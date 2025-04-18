@@ -18,5 +18,14 @@ namespace CureFusion.Controllers
             var result = await _doctorService.RegisterAsDoctor(request, id, cancellationToken);
             return result.IsSuccess ? Ok() : result.ToProblem(); // TODO : Change it to Created at action after adding the get action
         }
+
+
+        [HttpPost("AddDoctorAvaliability")]
+        public async Task<IActionResult> AddDoctorAvaliability([FromBody] DoctorAvailabilityRequest request, string id, CancellationToken cancellationToken = default)
+        {
+
+            var result = await _doctorService.DoctorAvaliability(request, id, cancellationToken);
+            return result.IsSuccess ? Ok() : result.ToProblem(); // TODO : Change it to Created at action after adding the get action
+        }
     }
 }

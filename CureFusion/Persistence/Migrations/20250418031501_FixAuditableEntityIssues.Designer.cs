@@ -4,6 +4,7 @@ using CureFusion.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CureFusion.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250418031501_FixAuditableEntityIssues")]
+    partial class FixAuditableEntityIssues
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -150,6 +153,13 @@ namespace CureFusion.Persistence.Migrations
                     b.Property<int>("AppointmentType")
                         .HasColumnType("int");
 
+                    b.Property<string>("CreatedByID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("DoctorId")
                         .HasColumnType("int");
 
@@ -167,9 +177,25 @@ namespace CureFusion.Persistence.Migrations
                     b.Property<DateTime?>("StatusChangedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("UpdatedById")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("UpdatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedByID");
+
                     b.HasIndex("DoctorId");
+
+                    b.HasIndex("UpdatedById");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Appointments");
                 });
@@ -231,6 +257,43 @@ namespace CureFusion.Persistence.Migrations
                     b.ToTable("Doctors");
                 });
 
+            modelBuilder.Entity("CureFusion.Entities.DoctorAppoitment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AvailableAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DoctorId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DurationInMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsBooked")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("SessionMode")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DoctorId");
+
+                    b.ToTable("DoctorAppoitments");
+                });
+
             modelBuilder.Entity("CureFusion.Entities.DoctorAvailability", b =>
                 {
                     b.Property<int>("Id")
@@ -247,10 +310,6 @@ namespace CureFusion.Persistence.Migrations
 
                     b.Property<TimeSpan>("From")
                         .HasColumnType("time");
-
-                    b.Property<string>("Notes")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("PricePerSlot")
                         .HasColumnType("decimal(18,2)");
@@ -476,13 +535,35 @@ namespace CureFusion.Persistence.Migrations
 
             modelBuilder.Entity("CureFusion.Entities.Appointment", b =>
                 {
+                    b.HasOne("CureFusion.Entities.ApplicationUser", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedByID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("CureFusion.Entities.Doctor", "Doctor")
                         .WithMany()
                         .HasForeignKey("DoctorId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("CureFusion.Entities.ApplicationUser", "UpdatedBy")
+                        .WithMany()
+                        .HasForeignKey("UpdatedById");
+
+                    b.HasOne("CureFusion.Entities.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CreatedBy");
+
                     b.Navigation("Doctor");
+
+                    b.Navigation("UpdatedBy");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("CureFusion.Entities.Doctor", b =>
@@ -494,6 +575,17 @@ namespace CureFusion.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("CureFusion.Entities.DoctorAppoitment", b =>
+                {
+                    b.HasOne("CureFusion.Entities.Doctor", "Doctor")
+                        .WithMany()
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Doctor");
                 });
 
             modelBuilder.Entity("CureFusion.Entities.DoctorAvailability", b =>

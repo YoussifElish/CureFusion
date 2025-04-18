@@ -2,11 +2,10 @@
 
 namespace CureFusion.Entities;
 
-public class Appointment : AuditableEntity
+public class Appointment 
 {
     public int Id { get; set; }
-    public ApplicationUser User { get; set; }
-    public string UserId { get; set; } 
+
     public AppointmentType AppointmentType { get; set; }
     public int DoctorId { get; set; }
     public Doctor Doctor { get; set; }

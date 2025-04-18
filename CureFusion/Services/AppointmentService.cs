@@ -31,12 +31,12 @@ public class AppointmentService(ApplicationDbContext dbContext) : IAppointmentSe
         return Result.Success(appointmentResponses);
 
     }
-    public async Task<Result> CancelAppointment(int AppointmentId,string userId, CancellationToken cancellationToken = default)
+    public async Task<Result> CancelAppointment(int AppointmentId,int userId, CancellationToken cancellationToken = default)
     {
         var appointment = await _dbContext.Appointments
             .Where(x => x.Id == AppointmentId)
             .FirstOrDefaultAsync() ;    
-        if (appointment.UserId != userId)
+        if (appointment.DoctorId != userId)
         {
             return Result.Failure(AppointmentErrors.NotAuthorized);
         }
@@ -58,27 +58,27 @@ public class AppointmentService(ApplicationDbContext dbContext) : IAppointmentSe
 
   
 
-    public async Task<Result<AppointmentResponse>> RescheduleAppointment(AppointmentReschudleRequest request, string userId, CancellationToken cancellationToken = default)
-    {
-        var appointment = await _dbContext.Appointments
-            .Where(x => x.Id == request.Id)
-            .FirstOrDefaultAsync();
-        if (appointment.UserId != userId)
-        {
-            return Result.Failure<AppointmentResponse>(AppointmentErrors.NotAuthorized);
-        }
+    //public async Task<Result<AppointmentResponse>> RescheduleAppointment(AppointmentReschudleRequest request, string userId, CancellationToken cancellationToken = default)
+    //{
+    //    var appointment = await _dbContext.Appointments
+    //        .Where(x => x.Id == request.Id)
+    //        .FirstOrDefaultAsync();
+    //    if (appointment.DoctorId != userId)
+    //    {
+    //        return Result.Failure<AppointmentResponse>(AppointmentErrors.NotAuthorized);
+    //    }
 
-        var isExceededTime = appointment.AppointmentDate < DateTime.UtcNow.AddHours(-1);
-        if (isExceededTime)
-        {
-            return Result.Failure<AppointmentResponse>(AppointmentErrors.ExceedTime);
-        }
-        appointment.AppointmentDate = request.NewTime;
-        _dbContext.Appointments.Update(appointment);
-        await _dbContext.SaveChangesAsync(cancellationToken);
-        var appointmentResponse = appointment.Adapt<AppointmentResponse>();
-        return Result.Success(appointmentResponse);
-    }
+    //    var isExceededTime = appointment.AppointmentDate < DateTime.UtcNow.AddHours(-1);
+    //    if (isExceededTime)
+    //    {
+    //        return Result.Failure<AppointmentResponse>(AppointmentErrors.ExceedTime);
+    //    }
+    //    appointment.AppointmentDate = request.NewTime;
+    //    _dbContext.Appointments.Update(appointment);
+    //    await _dbContext.SaveChangesAsync(cancellationToken);
+    //    var appointmentResponse = appointment.Adapt<AppointmentResponse>();
+    //    return Result.Success(appointmentResponse);
+    //}
 
     public async Task<Result<AppointmentResponse>> ReverseAppointment(AppointmentRequest request, CancellationToken cancellationToken = default)
     {
@@ -99,19 +99,27 @@ public class AppointmentService(ApplicationDbContext dbContext) : IAppointmentSe
 
         var newAppointment = new Appointment
         {
-            UserId = "dgdggdg",
+           
             DoctorId = request.DoctorId,
             AppointmentDate = request.AppointmentDate,
             AppointmentType = request.AppointmentType,
             Status = Enums.AppointmentStatus.Pending,  
             DurationInMinutes = request.DurationInMinutes,
-            Notes = request.Notes,
-            CreatedByID = "fsfsaffs", 
-            CreatedOn = DateTime.UtcNow
+            Notes = "aaaaa"
         };
         _dbContext.Appointments.Add(newAppointment);
         await _dbContext.SaveChangesAsync(cancellationToken);
         var appointmentResponse = newAppointment.Adapt<AppointmentResponse>();
         return Result.Success(appointmentResponse);
+    }
+
+    public Task<Result> CancelAppointment(int AppointmentId, string userId, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<Result<AppointmentResponse>> RescheduleAppointment(AppointmentReschudleRequest request, string userId, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
     }
 }

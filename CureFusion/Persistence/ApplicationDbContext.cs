@@ -14,18 +14,18 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     }
     public DbSet<Patient> Patients { get; set; }
     public DbSet<Doctor> Doctors { get; set; }
-    public DbSet<DoctorAppoitment>  DoctorAppoitments { get; set; }
     public DbSet<DoctorAvailability> DoctorAvailabilities { get; set; }
     public DbSet<HealthArticle> HealthArticles { get; set; } 
-    public DbSet<Appointment> Appointments { get; set; } 
-    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    public DbSet<Appointment> Appointments { get; set; }
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
+
         var entries = ChangeTracker.Entries<AuditableEntity>();
         foreach (var entityEntry in entries)
         {
-            var currentUserId = _httpContextAccessor.HttpContext?.User.Claims.FirstOrDefault().Value;
 
-            if(entityEntry.State == EntityState.Added)
+            var currentUserId = _httpContextAccessor.HttpContext?.User.Claims.FirstOrDefault().Value;
+            if (entityEntry.State == EntityState.Added)
             {
                 entityEntry.Property(x => x.CreatedByID).CurrentValue = currentUserId;
             }
@@ -36,6 +36,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 entityEntry.Property(x => x.UpdatedOn).CurrentValue = DateTime.UtcNow;
             }
         }
+
         return base.SaveChangesAsync(cancellationToken);
     }
+
+
 }

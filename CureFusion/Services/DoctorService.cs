@@ -1,5 +1,6 @@
 ﻿using CureFusion.Abstactions;
 using CureFusion.Contracts.Doctor;
+using CureFusion.Entities;
 using CureFusion.Enums;
 using CureFusion.Errors;
 using Mapster;
@@ -9,6 +10,8 @@ namespace CureFusion.Services;
 public class DoctorService(ApplicationDbContext context ) : IDoctorService
 {
     private readonly ApplicationDbContext _context = context;
+
+
 
     public async Task<Result> RegisterAsDoctor(DoctorRegisterRequest request, string userId, CancellationToken cancellationToken = default)
     {
@@ -50,5 +53,53 @@ public class DoctorService(ApplicationDbContext context ) : IDoctorService
 
             return Result.Success();
         
+    }
+
+
+    public async Task<Result> DoctorAvaliability(DoctorAvailabilityRequest request, string userId, CancellationToken cancellationToken = default)
+    {
+        var isUserDoctor = await _context.Doctors.Where(d => d.UserId == userId).SingleOrDefaultAsync(cancellationToken);
+        if (isUserDoctor is null)
+        {
+            return Result.Failure(DoctorErrors.NotDoctor);
+        }
+
+        var isSessionDuplicated = await _context.DoctorAvailabilities
+     .AnyAsync(x => x.DoctorId == isUserDoctor.Id &&
+                    (
+                        (x.From < request.To && x.To > request.From)  
+                    ), cancellationToken);
+
+
+        if (isSessionDuplicated)
+            return Result.Failure(DoctorErrors.Duplicated);
+
+        var doctorAvailability = request.Adapt<DoctorAvailability>();
+        doctorAvailability.DoctorId = isUserDoctor.Id;
+         _context.DoctorAvailabilities.Add(doctorAvailability);
+
+        var appointments = new List<Appointment>();
+
+        var startTime = request.From;
+        var endTime = request.To;
+        var sessionDuration = TimeSpan.FromMinutes(request.SlotDurationInMinutes);
+
+        while (startTime + sessionDuration <= endTime)
+        {
+            var appointment = new Appointment
+            {
+                DoctorId = isUserDoctor.Id,
+                AppointmentDate = request.Date.Add(startTime),
+                Status = AppointmentStatus.NotReversed, 
+                DurationInMinutes = request.SlotDurationInMinutes, 
+                AppointmentType = request.SessionMode,
+                Notes = request.Notes
+            };
+            appointments.Add(appointment);
+            startTime += sessionDuration;
+        }
+        _context.Appointments.AddRange(appointments);
+        await _context.SaveChangesAsync(cancellationToken);
+        return Result.Success();
     }
 }
