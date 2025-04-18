@@ -1,4 +1,5 @@
-﻿using Mapster;
+﻿using FluentValidation.AspNetCore;
+using Mapster;
 using MapsterMapper;
 
 namespace CureFusion;
@@ -17,6 +18,7 @@ public static class DependencyInjection
         services.AddAuthConfig(config);
         services.AddHttpContextAccessor();
         services.AddMapsterConfig();
+        services.AddFluentValidationConfig();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IAppointmentService, AppointmentService>();
         services.AddScoped<IDoctorService, DoctorService>();
@@ -25,6 +27,14 @@ public static class DependencyInjection
     }
 
 
+     // FluentValidation Configuration
+        private static IServiceCollection AddFluentValidationConfig(this IServiceCollection services)
+        {
+            services.AddFluentValidationAutoValidation()
+                    .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
+            return services;
+        }
     private static IServiceCollection AddDatabaseConnection(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection String Not Found");
