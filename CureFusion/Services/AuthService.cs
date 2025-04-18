@@ -1,6 +1,7 @@
 ﻿using System.Security.Cryptography;
 using CureFusion.Abstactions;
 using CureFusion.Entities;
+using CureFusion.Errors;
 using Microsoft.AspNetCore.Identity;
 
 namespace CureFusion.Services;
@@ -18,11 +19,13 @@ public class AuthService(UserManager<ApplicationUser> userManager,IJwtProvider j
 
         if (user is null)
 
-            return Result.Failure<AuthResponse>(new Error("invalid credentials","invalud username or password"));
+            return Result.Failure<AuthResponse>(AuthErrors.NotAuthorized);
 
         var isvalidpassword=await _userManager.CheckPasswordAsync(user, Password);
 
-        if (!isvalidpassword) return Result.Failure<AuthResponse>(new Error("invalid credentials", "invalud username or password"));
+        if (!isvalidpassword)
+            return Result.Failure<AuthResponse>(AuthErrors.NotAuthorized);
+
 
 
         var (token, ExpiresIn) = _jwtProvider.GenerateToken(user);
