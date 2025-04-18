@@ -19,6 +19,7 @@ public static class DependencyInjection
         services.AddMapsterConfig();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IAppointmentService, AppointmentService>();
+        services.AddScoped<IDoctorService, DoctorService>();
 
         return services;
     }

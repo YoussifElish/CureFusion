@@ -1,11 +1,54 @@
 ﻿using CureFusion.Abstactions;
+using CureFusion.Contracts.Doctor;
+using CureFusion.Enums;
+using CureFusion.Errors;
+using Mapster;
 
 namespace CureFusion.Services;
 
-public class DoctorService : IDoctorService
+public class DoctorService(ApplicationDbContext context ) : IDoctorService
 {
-    public Task<Result> RegisterAsDoctor(CancellationToken cancellationToken = default)
+    private readonly ApplicationDbContext _context = context;
+
+    public async Task<Result> RegisterAsDoctor(DoctorRegisterRequest request, string userId, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+       var isRegisteredBefore = await _context.Doctors.Where(d=>d.UserId == userId).SingleOrDefaultAsync();
+        
+        if (isRegisteredBefore is not null)
+        {
+            if (isRegisteredBefore.accountStatus == AccountStatus.Pending)
+            {
+                return Result.Failure(DoctorErrors.Pending);
+            }
+            else if (isRegisteredBefore.accountStatus == AccountStatus.Accepted)
+            {
+                return Result.Failure(DoctorErrors.RegisteredBefore);
+            }
+            else if (isRegisteredBefore.accountStatus == AccountStatus.Removed)
+            {
+                return Result.Failure(DoctorErrors.Removed);
+            }
+
+           else if (isRegisteredBefore.accountStatus == AccountStatus.Rejected)
+            {
+                isRegisteredBefore.Specialization = request.Specialization;
+                isRegisteredBefore.Bio = request.Bio;
+                isRegisteredBefore.accountStatus = AccountStatus.Pending;
+
+                await _context.SaveChangesAsync(cancellationToken);
+
+                return Result.Success();
+            }
+        }
+
+       
+
+            var newDoctor = request.Adapt<Doctor>();
+            newDoctor.UserId = userId; // TODO : I will remove it later when i add iaccessor to get current user id 
+            _context.Doctors.Add(newDoctor);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return Result.Success();
+        
     }
 }

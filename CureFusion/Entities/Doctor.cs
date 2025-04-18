@@ -2,7 +2,7 @@
 
 namespace CureFusion.Entities;
 
-public class Doctor : AuditableEntity
+public class Doctor 
 {
     public int Id { get; set; }
     public ApplicationUser User { get; set; }
@@ -10,7 +10,6 @@ public class Doctor : AuditableEntity
     public string Specialization { get; set; } = string.Empty;
     public string Bio { get; set; } = string.Empty;
     public int YearsOfExperience { get; set; }
-
     public bool IsActive { get; set; } = true;
     public AccountStatus accountStatus  { get; set; } = AccountStatus.Pending;
     public string CertificationDocumentUrl { get; set; } = string.Empty;
