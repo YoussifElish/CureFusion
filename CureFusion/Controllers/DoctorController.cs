@@ -27,5 +27,15 @@ namespace CureFusion.Controllers
             var result = await _doctorService.DoctorAvaliability(request, id, cancellationToken);
             return result.IsSuccess ? Ok() : result.ToProblem(); // TODO : Change it to Created at action after adding the get action
         }
+
+
+        [HttpDelete("RemoveDoctorAvaliability/{id}/{userId}")]
+
+        public async Task<IActionResult> RemoveDoctorAvaliability([FromRoute] int id, [FromRoute]  string userId, CancellationToken cancellationToken = default)
+        {
+
+            var result = await _doctorService.DeleteDoctorAvaliability(id, userId, cancellationToken);
+            return result.IsSuccess ? Ok() : result.ToProblem(); 
+        }
     }
 }

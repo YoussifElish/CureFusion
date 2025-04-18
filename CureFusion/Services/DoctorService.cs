@@ -77,6 +77,7 @@ public class DoctorService(ApplicationDbContext context ) : IDoctorService
         var doctorAvailability = request.Adapt<DoctorAvailability>();
         doctorAvailability.DoctorId = isUserDoctor.Id;
          _context.DoctorAvailabilities.Add(doctorAvailability);
+        await _context.SaveChangesAsync(cancellationToken);
 
         var appointments = new List<Appointment>();
 
@@ -93,13 +94,46 @@ public class DoctorService(ApplicationDbContext context ) : IDoctorService
                 Status = AppointmentStatus.NotReversed, 
                 DurationInMinutes = request.SlotDurationInMinutes, 
                 AppointmentType = request.SessionMode,
-                Notes = request.Notes
+                Notes = request.Notes,
+                DoctorAvailabilityId = doctorAvailability.Id
             };
             appointments.Add(appointment);
             startTime += sessionDuration;
         }
         _context.Appointments.AddRange(appointments);
         await _context.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
+
+    public async Task<Result> DeleteDoctorAvaliability(int Id, string userId, CancellationToken cancellationToken = default)
+    {
+        var isSessionExist = await _context.DoctorAvailabilities.Where(x => x.Id == Id).SingleOrDefaultAsync(cancellationToken);
+        if (isSessionExist is null)
+        {
+            return Result.Failure(DoctorErrors.NotFound);
+        }
+        if (!isSessionExist.IsActive)
+        {
+            return Result.Failure(DoctorErrors.AlreadyDeleted);
+        }
+
+        if (isSessionExist.DoctorId != _context.Doctors.Where(d => d.UserId == userId).Select(d => d.Id).SingleOrDefault())
+        {
+            return Result.Failure(DoctorErrors.NotYourSession);
+        }
+
+        var appointmentsToDelete = await _context.Appointments
+       .Where(a => a.DoctorAvailabilityId == Id)
+       .ToListAsync(cancellationToken);
+
+        if (appointmentsToDelete.Any())
+        {
+            _context.Appointments.RemoveRange(appointmentsToDelete);
+        }
+
+        isSessionExist.IsActive = false;
+        await _context.SaveChangesAsync(cancellationToken);
+
         return Result.Success();
     }
 }

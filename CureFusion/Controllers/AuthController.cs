@@ -1,4 +1,6 @@
-﻿namespace CureFusion.Controllers;
+﻿using SurveyBasket.Abstactions;
+
+namespace CureFusion.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 public class AuthController(IAuthService authService, IOptions<JwtOptions> JwtOptions) : ControllerBase
@@ -9,16 +11,16 @@ public class AuthController(IAuthService authService, IOptions<JwtOptions> JwtOp
     [HttpPost("Login")]
     public async Task<IActionResult> LoginAsync(Loginrequest request, CancellationToken cancellationToken)
     {
-        var AuthResult = await _authService.GetTokenAsync(request.Email, request.Password, cancellationToken); 
+        var authResult = await _authService.GetTokenAsync(request.Email, request.Password, cancellationToken); 
 
-        return AuthResult.IsSuccess? Ok(AuthResult.Value):BadRequest(AuthResult.Error);
+        return authResult.IsSuccess? Ok(authResult.Value): authResult.ToProblem();
     }
     [HttpPost("refresh")]
     public async Task<IActionResult> RefreshAsync([FromBody] RefreshTokenRequest request, CancellationToken CT)
     {
-        var authresult = await _authService.GetRefreshTokenAsync(request.Token, request.RefreshToken, CT);
+        var authResult = await _authService.GetRefreshTokenAsync(request.Token, request.RefreshToken, CT);
 
 
-       return authresult is null?BadRequest("invalid token"):Ok(authresult);
+        return authResult.IsSuccess ? Ok(authResult.Value) : authResult.ToProblem();
     }
 }
