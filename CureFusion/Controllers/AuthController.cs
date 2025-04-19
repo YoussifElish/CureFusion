@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity.Data;
 using SurveyBasket.Abstactions;
 
 namespace CureFusion.Controllers;
-[Route("api/[controller]")]
+[Route("[controller]")]
 [ApiController]
 public class AuthController(IAuthService authService, IOptions<JwtOptions> JwtOptions) : ControllerBase
 {
@@ -34,7 +34,14 @@ public class AuthController(IAuthService authService, IOptions<JwtOptions> JwtOp
         return authResult.IsSuccess ? Ok() : authResult.ToProblem();
 
     }
+    [HttpPost("register-as-doctor")]
 
+    public async Task<IActionResult> RegisterAsDoctor([FromBody] RegisterAsDoctorRequest request, CancellationToken cancellationToken)
+    {
+        var authResult = await _authService.RegisterDoctorAsync(request, cancellationToken);
+        return authResult.IsSuccess ? Ok() : authResult.ToProblem();
+
+    }
 
     [HttpPut("revoke-refresh-token")]
     public async Task<IActionResult> RevokeRefreshTokenAsync([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)

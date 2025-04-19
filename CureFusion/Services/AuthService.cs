@@ -8,50 +8,55 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.WebUtilities;
 using CureFusion.Contracts.Authentication;
+using CureFusion.Entities;
+using CureFusion.Abstactions.Consts;
+using Microsoft.EntityFrameworkCore;
+using CureFusion.Enums;
 
 namespace CureFusion.Services;
 
-public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider jwtProvider, IHttpContextAccessor httpContextAccessor, IEmailSender emailSender,ILogger<AuthService> logger) : IAuthService
+public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider jwtProvider, IHttpContextAccessor httpContextAccessor, IEmailSender emailSender,ILogger<AuthService> logger, SignInManager<ApplicationUser> signInManager,ApplicationDbContext context) : IAuthService
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IJwtProvider _jwtProvider = jwtProvider;
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
     private readonly IEmailSender _emailSender = emailSender;
     private readonly ILogger<AuthService> _logger = logger;
-    private readonly int _refreshtokenexpirydate = 14;
+    private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
+    private readonly ApplicationDbContext _context = context;
+    private readonly int _refreshtokenexpirydate = 1;
 
-    public async Task<Result<AuthResponse>> GetTokenAsync(string Email, string Password, CancellationToken cancellationToken = default)
+    public async Task<Result<AuthResponse>> GetTokenAsync(string email, string password, CancellationToken cancellationToken = default)
     {
-        var user = await _userManager.FindByEmailAsync(Email);
+        if (await _userManager.FindByEmailAsync(email) is not { } user)
+            return Result.Failure<AuthResponse>(AuthErrors.InavlidPassword);
 
-        if (user is null)
+        if (user.IsDisabled)
+            return Result.Failure<AuthResponse>(AuthErrors.DisabledUser);
 
-            return Result.Failure<AuthResponse>(AuthErrors.NotAuthorized);
+        var result = await _signInManager.PasswordSignInAsync(user, password, false, true);
 
-        var isvalidpassword = await _userManager.CheckPasswordAsync(user, Password);
-
-        if (!isvalidpassword)
-            return Result.Failure<AuthResponse>(AuthErrors.NotAuthorized);
-
-
-
-        var (token, ExpiresIn) = _jwtProvider.GenerateToken(user);
-
-        var RefreshToken = GenerateRefreshToken();
-
-        var RefreshTokenExpiration = DateTime.UtcNow.AddDays(_refreshtokenexpirydate);
-
-        user.RefreshTokens.Add(new RefreshTokens
+        if (result.Succeeded)
         {
-            Token = RefreshToken,
-            ExpiresOn = RefreshTokenExpiration
-        });
-        await _userManager.UpdateAsync(user);
-        var response = new AuthResponse(user.Id, Email, user.FirstName, user.LastName, token, ExpiresIn, RefreshToken,
-            RefreshTokenExpiration);
-        return Result.Success(response);
 
 
+            var (token, ExpiresIn) = _jwtProvider.GenerateToken(user);
+            var refreshToken = GenerateRefreshToken();
+            var refreshTokenExpiration = DateTime.UtcNow.AddDays(_refreshtokenexpirydate);
+
+            user.RefreshTokens.Add(new RefreshTokens
+            {
+                Token = refreshToken,
+                ExpiresOn = refreshTokenExpiration,
+            });
+            await _userManager.UpdateAsync(user);
+            var response = new AuthResponse(user.Id, user.Email, user.FirstName, user.LastName, token, ExpiresIn, refreshToken, refreshTokenExpiration);
+            return Result.Success<AuthResponse>(response);
+
+        }
+        var error = result.IsNotAllowed ? AuthErrors.EmailNotConfirmed : result.IsLockedOut ? AuthErrors.LockedUser : AuthErrors.InavlidPassword;
+
+        return Result.Failure<AuthResponse>(error);
     }
     public async Task<Result> RegisterAsync(Contracts.Auth.RegisterRequest request, CancellationToken cancellationToken)
     {
@@ -59,6 +64,7 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
         if (emailIsExist)
             return Result.Failure(AuthErrors.DuplicatedEmail);
         var user = request.Adapt<ApplicationUser>();
+        user.EmailConfirmed = false;
         var result = await _userManager.CreateAsync(user, request.Password);
 
         if (result.Succeeded)
@@ -79,6 +85,41 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
     }
 
 
+    public async Task<Result> RegisterDoctorAsync(RegisterAsDoctorRequest request, CancellationToken cancellationToken)
+    {
+        var emailIsExist = await _userManager.Users.AnyAsync(x => x.Email == request.Email, cancellationToken);
+        if (emailIsExist)
+            return Result.Failure(AuthErrors.DuplicatedEmail);
+        var user = request.Adapt<ApplicationUser>();
+        user.EmailConfirmed = false;
+        var result = await _userManager.CreateAsync(user, request.Password);
+
+        if (result.Succeeded)
+        {
+            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+            _logger.LogInformation("Confirmation Code: {Code}", code);
+            await SendConfimartionEmail(user, code);
+
+            var newDoctor = new Doctor
+            {
+                UserId = user.Id,
+                Specialization = request.Specialization,
+                Bio = request.Bio,
+                CertificationDocumentUrl = request.CertificationDocumentUrl,
+                accountStatus = AccountStatus.Pending
+            };
+            _context.Doctors.Add(newDoctor);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return Result.Success();
+        }
+
+        var error = result.Errors.First();
+        return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
+
+
+    }
     public async Task<Result> RevokeRefreshTokenAsync(string token, string refreshToken, CancellationToken cancellationToken)
     {
         var userId = _jwtProvider.ValidateToken(token);
@@ -121,7 +162,7 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
         var result = await _userManager.ConfirmEmailAsync(user, code);
         if (result.Succeeded)
         {
-            //await _userManager.AddToRoleAsync(user, DefaultRoles.Member);
+            await _userManager.AddToRoleAsync(user, DefaultRoles.Member);
             return Result.Success();
         }
         var error = result.Errors.First();
