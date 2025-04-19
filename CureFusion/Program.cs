@@ -21,12 +21,11 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
+
     // Enable Swagger in development
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+
 app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
 app.UseHangfireDashboard("/jobs", new DashboardOptions
