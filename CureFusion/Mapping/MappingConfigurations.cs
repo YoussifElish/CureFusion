@@ -8,7 +8,8 @@ namespace SurveyBasket.Mapping
     {
         public void Register(TypeAdapterConfig config)
         {
-                
+            config.NewConfig<CureFusion.Contracts.Auth.RegisterRequest, ApplicationUser>().Map(dest => dest.UserName, src => src.Email).Map(dest => dest.EmailConfirmed, src => true);
+
         }
     }
 }

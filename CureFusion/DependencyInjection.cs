@@ -1,6 +1,11 @@
-﻿using FluentValidation.AspNetCore;
+﻿using CureFusion.Settings;
+using FluentValidation.AspNetCore;
+using Hangfire;
 using Mapster;
 using MapsterMapper;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.Extensions.Configuration;
+using SurveyBasket.Services;
 
 namespace CureFusion;
 
@@ -18,11 +23,15 @@ public static class DependencyInjection
         services.AddAuthConfig(config);
         services.AddHttpContextAccessor();
         services.AddMapsterConfig();
+        services.AddIdentityConfig();
         services.AddFluentValidationConfig();
+        services.AddBackgroundJobsConfig(config);
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IAppointmentService, AppointmentService>();
         services.AddScoped<IDoctorService, DoctorService>();
+        services.AddScoped<IEmailSender, EmailService>();
 
+        services.Configure<MailSettings>(config.GetSection(nameof(MailSettings)));
         return services;
     }
 
@@ -35,6 +44,19 @@ public static class DependencyInjection
 
             return services;
         }
+
+    private static IServiceCollection AddBackgroundJobsConfig(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddHangfire(config => config
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UseSqlServerStorage(configuration.GetConnectionString("HangfireConnection")));
+
+        services.AddHangfireServer();
+
+        return services;
+    }
     private static IServiceCollection AddDatabaseConnection(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection String Not Found");
@@ -56,7 +78,7 @@ public static class DependencyInjection
     private static IServiceCollection AddAuthConfig(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddIdentity<ApplicationUser, IdentityRole>()
-             .AddEntityFrameworkStores<ApplicationDbContext>();
+             .AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 
 
         services.AddSingleton<IJwtProvider, JwtProvider>();
@@ -92,6 +114,20 @@ public static class DependencyInjection
 
                 };
             });
+
+        return services;
+    }
+
+    private static IServiceCollection AddIdentityConfig(this IServiceCollection services)
+    {
+        services.Configure<IdentityOptions>(options =>
+        {
+            options.Password.RequiredLength = 8;
+            options.Password.RequireNonAlphanumeric = false;
+            options.SignIn.RequireConfirmedEmail = true;
+            options.User.RequireUniqueEmail = true;
+
+        });
 
         return services;
     }

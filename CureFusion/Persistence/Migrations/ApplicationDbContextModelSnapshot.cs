@@ -176,7 +176,7 @@ namespace CureFusion.Persistence.Migrations
 
                     b.HasIndex("DoctorId");
 
-                    b.ToTable("Appointments");
+                    b.ToTable("Appointments", (string)null);
                 });
 
             modelBuilder.Entity("CureFusion.Entities.Doctor", b =>
@@ -233,7 +233,7 @@ namespace CureFusion.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Doctors");
+                    b.ToTable("Doctors", (string)null);
                 });
 
             modelBuilder.Entity("CureFusion.Entities.DoctorAvailability", b =>
@@ -276,7 +276,7 @@ namespace CureFusion.Persistence.Migrations
 
                     b.HasIndex("DoctorId");
 
-                    b.ToTable("DoctorAvailabilities");
+                    b.ToTable("DoctorAvailabilities", (string)null);
                 });
 
             modelBuilder.Entity("CureFusion.Entities.HealthArticle", b =>
@@ -304,7 +304,7 @@ namespace CureFusion.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("HealthArticles");
+                    b.ToTable("HealthArticles", (string)null);
                 });
 
             modelBuilder.Entity("CureFusion.Entities.Patient", b =>
@@ -336,7 +336,7 @@ namespace CureFusion.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Patients");
+                    b.ToTable("Patients", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -473,7 +473,7 @@ namespace CureFusion.Persistence.Migrations
 
                             b1.HasKey("ApplicationUserId", "Id");
 
-                            b1.ToTable("RefreshTokens");
+                            b1.ToTable("RefreshTokens", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("ApplicationUserId");
