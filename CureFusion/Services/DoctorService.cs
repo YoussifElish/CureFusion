@@ -7,15 +7,16 @@ using Mapster;
 
 namespace CureFusion.Services;
 
-public class DoctorService(ApplicationDbContext context ) : IDoctorService
+public class DoctorService(ApplicationDbContext context , IHttpContextAccessor httpContextAccessor ) : IDoctorService
 {
     private readonly ApplicationDbContext _context = context;
+    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
-
-
-    public async Task<Result> RegisterAsDoctor(DoctorRegisterRequest request, string userId, CancellationToken cancellationToken = default)
+    public async Task<Result> RegisterAsDoctor(DoctorRegisterRequest request, CancellationToken cancellationToken = default)
     {
-       var isRegisteredBefore = await _context.Doctors.Where(d=>d.UserId == userId).SingleOrDefaultAsync();
+
+        var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var isRegisteredBefore = await _context.Doctors.Where(d=>d.UserId == userId).SingleOrDefaultAsync();
         
         if (isRegisteredBefore is not null)
         {
@@ -56,8 +57,10 @@ public class DoctorService(ApplicationDbContext context ) : IDoctorService
     }
 
 
-    public async Task<Result> DoctorAvaliability(DoctorAvailabilityRequest request, string userId, CancellationToken cancellationToken = default)
+    public async Task<Result> DoctorAvaliability(DoctorAvailabilityRequest request,  CancellationToken cancellationToken = default)
     {
+        var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
         var isUserDoctor = await _context.Doctors.Where(d => d.UserId == userId).SingleOrDefaultAsync(cancellationToken);
         if (isUserDoctor is null)
         {
@@ -105,8 +108,10 @@ public class DoctorService(ApplicationDbContext context ) : IDoctorService
         return Result.Success();
     }
 
-    public async Task<Result> DeleteDoctorAvaliability(int Id, string userId, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteDoctorAvaliability(int Id,  CancellationToken cancellationToken = default)
     {
+        var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
         var isSessionExist = await _context.DoctorAvailabilities.Where(x => x.Id == Id).SingleOrDefaultAsync(cancellationToken);
         if (isSessionExist is null)
         {

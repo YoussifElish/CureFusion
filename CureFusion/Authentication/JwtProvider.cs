@@ -1,21 +1,25 @@
-﻿namespace CureFusion.Authentication;
+﻿using SurveyBasket.Abstactions.Consts;
+using System.Data;
+using System.Text.Json;
+
+namespace CureFusion.Authentication;
 
 public class JwtProvider(IOptions<JwtOptions> JwtOptions) : IJwtProvider
 {
     private readonly JwtOptions _jwtOptions = JwtOptions.Value;
 
-    public (string token, int expiresin) GenerateToken(ApplicationUser user)
+    public (string token, int expiresin) GenerateToken(ApplicationUser user, IEnumerable<string> roles, IEnumerable<string> permissions)
     {
-        Claim[] claims =
-            [
-            new (JwtRegisteredClaimNames.Sub,user.Id),
-            new (JwtRegisteredClaimNames.Email,user.Email!),
-            new (JwtRegisteredClaimNames.GivenName,user.FirstName),
-            new (JwtRegisteredClaimNames.FamilyName,user.LastName),
-            new (JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
+        Claim[] claims = [
+              new (JwtRegisteredClaimNames.Sub,user.Id),
+                new (JwtRegisteredClaimNames.Email,user.Email!),
+                new (JwtRegisteredClaimNames.GivenName,user.FirstName),
+                new (JwtRegisteredClaimNames.FamilyName,user.LastName),
+                new (JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
+            new(nameof(roles), JsonSerializer.Serialize(roles), JsonClaimValueTypes.JsonArray),
+            new(nameof(permissions), JsonSerializer.Serialize(permissions), JsonClaimValueTypes.JsonArray)
+        ];
 
-
-            ];
 
         var symmetricsecuritykey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
 

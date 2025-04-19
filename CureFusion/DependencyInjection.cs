@@ -1,8 +1,10 @@
-﻿using CureFusion.Settings;
+﻿using CureFusion.Authentication.Filters;
+using CureFusion.Settings;
 using FluentValidation.AspNetCore;
 using Hangfire;
 using Mapster;
 using MapsterMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Configuration;
 using SurveyBasket.Services;
@@ -82,8 +84,10 @@ public static class DependencyInjection
 
 
         services.AddSingleton<IJwtProvider, JwtProvider>();
-        
-    
+        services.AddTransient<IAuthorizationHandler, PermissionAuthorizationHandler>();
+        services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
+
+
         services.AddOptions<JwtOptions>()
             .BindConfiguration(JwtOptions.SectionName)
             .ValidateDataAnnotations()

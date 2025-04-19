@@ -38,9 +38,9 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
 
         if (result.Succeeded)
         {
+            var (userRoles, userPermissions) = await GetUserRolesAndPermissions(user, cancellationToken);
 
-
-            var (token, ExpiresIn) = _jwtProvider.GenerateToken(user);
+            var (token, ExpiresIn) = _jwtProvider.GenerateToken(user, userRoles, userPermissions);
             var refreshToken = GenerateRefreshToken();
             var refreshTokenExpiration = DateTime.UtcNow.AddDays(_refreshtokenexpirydate);
 
@@ -246,8 +246,8 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
 
 
         UserRefreshToken.RevokedOn = DateTime.UtcNow;
-
-        var (newtoken, ExpiresIn) = _jwtProvider.GenerateToken(user);
+        var (userRoles, userPermissions) = await GetUserRolesAndPermissions(user, cancellationToken);
+        var (newToken, ExpiresIn) = _jwtProvider.GenerateToken(user, userRoles, userPermissions);
         var newRefreshtoken = GenerateRefreshToken();
         var RefreshtokenExpiration = DateTime.UtcNow.AddDays(_refreshtokenexpirydate);
         user.RefreshTokens.Add(new RefreshTokens
@@ -256,7 +256,7 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
             ExpiresOn = RefreshtokenExpiration
         });
         await _userManager.UpdateAsync(user);
-        var response = new AuthResponse(user.Id, user.Email, user.FirstName, user.LastName, newtoken, ExpiresIn, newRefreshtoken, RefreshtokenExpiration);
+        var response = new AuthResponse(user.Id, user.Email, user.FirstName, user.LastName, newToken, ExpiresIn, newRefreshtoken, RefreshtokenExpiration);
 
         return Result.Success(response);
     }
@@ -292,5 +292,20 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
         await Task.CompletedTask;
     }
 
-  
+    private async Task<(IEnumerable<string> roles, IEnumerable<string> permissions)> GetUserRolesAndPermissions(ApplicationUser user, CancellationToken cancellationToken)
+    {
+        var userRoles = await _userManager.GetRolesAsync(user);
+
+        //var userPermissions = await _context.Roles.Join(_context.RoleClaims, role => role.Id, claim => claim.RoleId, (role, claim) => new { role, claim }).Where(x => userRoles.Contains(x.role.Name!)).Select(x => x.claim.ClaimValue!).Distinct().ToListAsync(cancellationToken);
+
+        var userPermissions = await (from r in _context.Roles
+                                     join p in _context.RoleClaims
+                                     on r.Id equals p.RoleId
+                                     where userRoles.Contains(r.Name!) && r.IsDeleted == false
+                                     select p.ClaimValue!
+            ).Distinct().ToListAsync(cancellationToken);
+
+        return (userRoles, userPermissions);
+
+    }
 }

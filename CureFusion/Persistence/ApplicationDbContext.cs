@@ -1,4 +1,6 @@
-﻿namespace CureFusion.Persistence;
+﻿using Microsoft.EntityFrameworkCore.Diagnostics;
+
+namespace CureFusion.Persistence;
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options,IHttpContextAccessor httpContextAccessor ) : IdentityDbContext<ApplicationUser,ApplicationRole,string>(options)
 {
@@ -11,12 +13,18 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         foreach (var fk in cascadeFKs)
             fk.DeleteBehavior = DeleteBehavior.Restrict;
         base.OnModelCreating(builder);
+
     }
     public DbSet<Patient> Patients { get; set; }
     public DbSet<Doctor> Doctors { get; set; }
     public DbSet<DoctorAvailability> DoctorAvailabilities { get; set; }
     public DbSet<HealthArticle> HealthArticles { get; set; } 
     public DbSet<Appointment> Appointments { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+    }
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
 
