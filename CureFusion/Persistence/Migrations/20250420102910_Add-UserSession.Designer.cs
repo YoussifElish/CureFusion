@@ -4,6 +4,7 @@ using CureFusion.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CureFusion.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250420102910_Add-UserSession")]
+    partial class AddUserSession
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -179,7 +182,7 @@ namespace CureFusion.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@CUREFUSION.COM",
                             NormalizedUserName = "ADMIN@CUREFUSION.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEP0xqxM2l6hzNs5NRIQnlQnZsDm4MBZjN7j2pT8lvAk7XO+vFu8luGeah8qVmtAGPw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAELH0HeKgufwPdvV97KbrO5yqBUDeyqvHS97KS0aTGHf4Wo9V7383Dli+ejW62OI2Rg==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "07DB2EDBB86447CA8B2EC4E293AE89F5",
                             TwoFactorEnabled = false,
@@ -398,9 +401,6 @@ namespace CureFusion.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("ExpiryAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("IpAddress")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -419,13 +419,16 @@ namespace CureFusion.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId1")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId1");
 
                     b.ToTable("UserSessions");
                 });
@@ -655,7 +658,7 @@ namespace CureFusion.Persistence.Migrations
                 {
                     b.HasOne("CureFusion.Entities.ApplicationUser", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("UserId1")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 

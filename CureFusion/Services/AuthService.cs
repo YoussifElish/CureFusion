@@ -12,10 +12,11 @@ using CureFusion.Entities;
 using CureFusion.Abstactions.Consts;
 using Microsoft.EntityFrameworkCore;
 using CureFusion.Enums;
+using System.Threading;
 
 namespace CureFusion.Services;
 
-public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider jwtProvider, IHttpContextAccessor httpContextAccessor, IEmailSender emailSender,ILogger<AuthService> logger, SignInManager<ApplicationUser> signInManager,ApplicationDbContext context) : IAuthService
+public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider jwtProvider, IHttpContextAccessor httpContextAccessor, IEmailSender emailSender,ILogger<AuthService> logger, SignInManager<ApplicationUser> signInManager,ApplicationDbContext context ,ISessionService sessionService) : IAuthService
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IJwtProvider _jwtProvider = jwtProvider;
@@ -24,6 +25,7 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
     private readonly ILogger<AuthService> _logger = logger;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
     private readonly ApplicationDbContext _context = context;
+    private readonly ISessionService _sessionService = sessionService;
     private readonly int _refreshtokenexpirydate = 1;
 
     public async Task<Result<AuthResponse>> GetTokenAsync(string email, string password, CancellationToken cancellationToken = default)
@@ -49,7 +51,22 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
                 Token = refreshToken,
                 ExpiresOn = refreshTokenExpiration,
             });
+
+
+            var session = new UserSession
+            {
+                UserId = user.Id,
+                SessionToken = token,
+                IpAddress = _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress.ToString(),
+                UserAgent = _httpContextAccessor.HttpContext?.Request.Headers["User-Agent"],
+                LastActivity = DateTime.UtcNow,
+                IsActive = true,
+                ExpiryAt = DateTime.UtcNow.AddMinutes(1)
+            };
             await _userManager.UpdateAsync(user);
+            await _context.UserSessions.AddAsync(session);
+            await _context.SaveChangesAsync(cancellationToken);
+
             var response = new AuthResponse(user.Id, user.Email, user.FirstName, user.LastName, token, ExpiresIn, refreshToken, refreshTokenExpiration);
             return Result.Success<AuthResponse>(response);
 
@@ -82,6 +99,20 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
         return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
 
 
+    }
+
+    public async Task<Result> TerminateSessionAsync(string sessionToken, CancellationToken cancellationToken)
+    {
+        var userSession = await _context.UserSessions
+                                        .FirstOrDefaultAsync(s => s.SessionToken == sessionToken, cancellationToken);
+
+        if (userSession == null || !userSession.IsActive)
+            return Result.Failure(AuthErrors.InvalidSession);
+
+        userSession.IsActive = false;   
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return Result.Success();
     }
 
 
@@ -291,6 +322,7 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
 
         await Task.CompletedTask;
     }
+
 
     private async Task<(IEnumerable<string> roles, IEnumerable<string> permissions)> GetUserRolesAndPermissions(ApplicationUser user, CancellationToken cancellationToken)
     {

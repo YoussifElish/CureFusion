@@ -7,13 +7,20 @@ using Mapster;
 
 namespace CureFusion.Services;
 
-public class DoctorService(ApplicationDbContext context , IHttpContextAccessor httpContextAccessor ) : IDoctorService
+public class DoctorService(ApplicationDbContext context , IHttpContextAccessor httpContextAccessor,ISessionService sessionService ) : IDoctorService
 {
     private readonly ApplicationDbContext _context = context;
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+    private readonly ISessionService _sessionService = sessionService;
 
     public async Task<Result> RegisterAsDoctor(DoctorRegisterRequest request, CancellationToken cancellationToken = default)
     {
+        var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString()?.Replace("Bearer ", string.Empty);
+       var session = await _sessionService.IsSessionValidAsync(token, cancellationToken);
+        if (!session)
+        {
+            return Result.Failure(AuthErrors.InvalidSession);
+        }
 
         var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var isRegisteredBefore = await _context.Doctors.Where(d=>d.UserId == userId).SingleOrDefaultAsync();

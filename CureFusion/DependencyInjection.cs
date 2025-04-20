@@ -32,6 +32,8 @@ public static class DependencyInjection
         services.AddScoped<IAppointmentService, AppointmentService>();
         services.AddScoped<IDoctorService, DoctorService>();
         services.AddScoped<IEmailSender, EmailService>();
+        services.AddScoped<ISessionService, SessionService>();
+
 
         services.Configure<MailSettings>(config.GetSection(nameof(MailSettings)));
         return services;

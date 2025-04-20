@@ -1,7 +1,8 @@
-﻿using Hangfire.Dashboard.BasicAuthorization;
+using Hangfire.Dashboard.BasicAuthorization;
 
 using Hangfire;
 using Serilog;
+
 
 var builder = WebApplication.CreateBuilder(args);
 

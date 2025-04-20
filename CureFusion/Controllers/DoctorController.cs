@@ -33,7 +33,7 @@ namespace CureFusion.Controllers
         [Authorize(Roles = DefaultRoles.Doctor)]
 
 
-        [HttpDelete("RemoveDoctorAvaliability/{id}/{userId}")]
+        [HttpDelete("RemoveDoctorAvaliability/{id}")]
 
         public async Task<IActionResult> RemoveDoctorAvaliability([FromRoute] int id, CancellationToken cancellationToken = default)
         {

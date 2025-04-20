@@ -19,6 +19,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Doctor> Doctors { get; set; }
     public DbSet<DoctorAvailability> DoctorAvailabilities { get; set; }
     public DbSet<HealthArticle> HealthArticles { get; set; } 
+    public DbSet<UserSession> UserSessions { get; set; } 
     public DbSet<Appointment> Appointments { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

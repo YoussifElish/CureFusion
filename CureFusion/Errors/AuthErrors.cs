@@ -9,6 +9,7 @@ public static class AuthErrors
     public static readonly Error InvalidCode = new("AuthError.InvalidCode", "Invalid Code", StatusCodes.Status401Unauthorized);
     public static readonly Error DuplicatedConfirmation = new("AuthError.DuplicatedConfirmation", "Email already Confirmed", StatusCodes.Status400BadRequest);
     public static readonly Error InvalidToken = new("AuthError.InvalidToken", "Invalid Email Or Password", StatusCodes.Status400BadRequest);
+    public static readonly Error InvalidSession = new("AuthError.InvalidSession", "Session not found or already terminated.", StatusCodes.Status400BadRequest);
 
     public static readonly Error DisabledUser = new("AuthError.DisabledUser", "Disabled User Please Contacy Your Administrator", StatusCodes.Status409Conflict);
     public static readonly Error InavlidUser = new("AuthError.InvalidUser", "Invalid Email Or Password", StatusCodes.Status400BadRequest);

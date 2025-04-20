@@ -4,6 +4,7 @@ using CureFusion.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CureFusion.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250420103143_UpdateUserSessionTable")]
+    partial class UpdateUserSessionTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -179,7 +182,7 @@ namespace CureFusion.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@CUREFUSION.COM",
                             NormalizedUserName = "ADMIN@CUREFUSION.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEP0xqxM2l6hzNs5NRIQnlQnZsDm4MBZjN7j2pT8lvAk7XO+vFu8luGeah8qVmtAGPw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEMu0RubcdowOMA75yIuma5qimiMUQl/0J9O1ZmVxhA5zOCctzD8CTrF98sYO0sw2Cw==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "07DB2EDBB86447CA8B2EC4E293AE89F5",
                             TwoFactorEnabled = false,
@@ -397,9 +400,6 @@ namespace CureFusion.Persistence.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("ExpiryAt")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("IpAddress")
                         .IsRequired()
