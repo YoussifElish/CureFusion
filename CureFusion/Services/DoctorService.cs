@@ -15,12 +15,12 @@ public class DoctorService(ApplicationDbContext context , IHttpContextAccessor h
 
     public async Task<Result> RegisterAsDoctor(DoctorRegisterRequest request, CancellationToken cancellationToken = default)
     {
-        var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString()?.Replace("Bearer ", string.Empty);
-       var session = await _sessionService.IsSessionValidAsync(token, cancellationToken);
-        if (!session)
-        {
-            return Result.Failure(AuthErrors.InvalidSession);
-        }
+       // var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString()?.Replace("Bearer ", string.Empty);
+       //var session = await _sessionService.IsSessionValidAsync(token, cancellationToken);
+       // if (!session)
+       // {
+       //     return Result.Failure(AuthErrors.InvalidSession);
+       // }
 
         var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var isRegisteredBefore = await _context.Doctors.Where(d=>d.UserId == userId).SingleOrDefaultAsync();

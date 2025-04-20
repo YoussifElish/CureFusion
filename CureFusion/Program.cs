@@ -2,6 +2,7 @@ using Hangfire.Dashboard.BasicAuthorization;
 
 using Hangfire;
 using Serilog;
+using CureFusion.Helpers;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -52,6 +53,7 @@ app.UseHangfireDashboard("/jobs", new DashboardOptions
 }); app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<SessionValidationMiddleware>();
 app.MapControllers();
 
 app.Run();

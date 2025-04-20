@@ -1,7 +1,5 @@
 ﻿
 using Microsoft.AspNetCore.Authorization;
-using CureFusion.Authentication.Filters;
-using System.Security.Claims;
 using SurveyBasket.Abstactions.Consts;
 
 namespace CureFusion.Authentication.Filters

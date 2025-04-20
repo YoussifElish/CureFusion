@@ -2,6 +2,6 @@
 
 public interface ISessionService
 {
-    Task<bool> IsSessionValidAsync(string sessionToken, CancellationToken cancellationToken);
+    Task<UserSession?> IsSessionValidAsync(string sessionToken, CancellationToken cancellationToken);
 }
 
