@@ -3,12 +3,14 @@ using Hangfire.Dashboard.BasicAuthorization;
 using Hangfire;
 using Serilog;
 using CureFusion.Helpers;
+using CureFusion.Settings;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddScoped<WhatsAppService>();
 
 builder.Services.AddDependencies(builder.Configuration);
 builder.Host.UseSerilog((context, configuration) =>
@@ -17,6 +19,8 @@ configuration.ReadFrom.Configuration(context.Configuration)
 // Register Swagger services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.Configure<WhatsAppConfigurations>(
+    builder.Configuration.GetSection("WhatsAppConfigurations"));
 
 
 

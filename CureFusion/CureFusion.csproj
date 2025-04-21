@@ -46,11 +46,11 @@
      <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
      <PackageReference Include="Serilog.Settings.Configuration" Version="9.0.0" />
      <PackageReference Include="Swashbuckle.AspNetCore" Version="7.0.0" />
+     <PackageReference Include="Vonage" Version="7.17.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Extensions\" />
-    <Folder Include="Settings\" />
   </ItemGroup>
 
 </Project>

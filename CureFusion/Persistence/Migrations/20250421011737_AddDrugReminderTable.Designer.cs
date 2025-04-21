@@ -4,6 +4,7 @@ using CureFusion.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CureFusion.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250421011737_AddDrugReminderTable")]
+    partial class AddDrugReminderTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -179,7 +182,7 @@ namespace CureFusion.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@CUREFUSION.COM",
                             NormalizedUserName = "ADMIN@CUREFUSION.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEHyApa1AR+lXsz6C2sTym+gnXntMofFwpxk+Y4tEY3BB/vHrlvRlzaRJZMA5i1M5Rw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEFWxiPyrkVHM2OnqLVaRcgF6v0xVzw+vxhO1dHWLn18TGQe6qjS8pCxDXdI0syfB1Q==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "07DB2EDBB86447CA8B2EC4E293AE89F5",
                             TwoFactorEnabled = false,
@@ -381,15 +384,17 @@ namespace CureFusion.Persistence.Migrations
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId1")
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("DrugId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId1");
 
                     b.ToTable("DrugReminders");
                 });
@@ -725,9 +730,7 @@ namespace CureFusion.Persistence.Migrations
 
                     b.HasOne("CureFusion.Entities.ApplicationUser", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("UserId1");
 
                     b.Navigation("Drug");
 

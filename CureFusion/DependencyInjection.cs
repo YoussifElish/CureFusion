@@ -28,8 +28,14 @@ public static class DependencyInjection
         services.AddIdentityConfig();
         services.AddFluentValidationConfig();
         services.AddBackgroundJobsConfig(config);
+        services.AddScoped<IBackgroundJobClient, BackgroundJobClient>();  // تسجيل BackgroundJobClient
+
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IAppointmentService, AppointmentService>();
+        services.Configure<VonageSettings>(config.GetSection("VonageSettings"));
+        services.AddTransient<IVoiceNotificationService, VoiceNotificationService>();
+
+        services.AddScoped<IDrugReminderService, DrugReminderService>();
         services.AddScoped<IDoctorService, DoctorService>();
         services.AddScoped<IEmailSender, EmailService>();
         services.AddScoped<ISessionService, SessionService>();
