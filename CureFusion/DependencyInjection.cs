@@ -36,6 +36,7 @@ public static class DependencyInjection
         services.AddTransient<IVoiceNotificationService, VoiceNotificationService>();
 
         services.AddScoped<IDrugReminderService, DrugReminderService>();
+        services.AddScoped<IDrugService, DrugService>();
         services.AddScoped<IDoctorService, DoctorService>();
         services.AddScoped<IEmailSender, EmailService>();
         services.AddScoped<ISessionService, SessionService>();
