@@ -1,4 +1,5 @@
 ﻿using Hangfire;
+using Microsoft.AspNetCore.Identity;
 
 public class DrugReminderService : IDrugReminderService
 {
@@ -7,14 +8,16 @@ public class DrugReminderService : IDrugReminderService
    
     private readonly ILogger<DrugReminderService> _logger;
     private readonly ApplicationDbContext _context;
-    private readonly IVoiceNotificationService _voiceNotificationService;
+    private readonly ITwilioVoiceService _twilioVoiceService;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public DrugReminderService(IBackgroundJobClient backgroundJobClient, ILogger<DrugReminderService> logger, ApplicationDbContext context, IVoiceNotificationService voiceNotificationService)
+    public DrugReminderService(IBackgroundJobClient backgroundJobClient, ILogger<DrugReminderService> logger, ApplicationDbContext context, ITwilioVoiceService twilioVoiceService,UserManager<ApplicationUser> userManager)
     {
         _backgroundJobClient = backgroundJobClient;
         _logger = logger;
         _context = context;
-        _voiceNotificationService = voiceNotificationService;
+        _twilioVoiceService = twilioVoiceService;
+        _userManager = userManager;
     }
 
     public async Task ScheduleDrugReminderAsync(DrugReminder reminder)
@@ -47,19 +50,24 @@ public class DrugReminderService : IDrugReminderService
     public async Task SendReminderNotification(DrugReminder reminder)
     {
 
-        await _voiceNotificationService.SendVoiceNotificationAsync(
-          $"201093441321",
-          $"مرحبًا يوسف، نحن من فريق الدعم في موقع CureFusion. نود تذكيرك بأخذ الدواء الذي وصفه لك الطبيب، وهو {reminder.Drug.Name}. نرجو منك الالتزام بالجرعة المحددة في الوقت المحدد. مع تحياتنا، فريق CureFusion.",
-          "ar", 
-          1
-      );
+        var user = await _userManager.FindByIdAsync(reminder.UserId);
 
-
-
+        if (user == null)
+        {
+            _logger.LogError("User not found.");
+            return;
+        }
         _logger.LogInformation($"Sending reminder notification for drug {reminder.Drug.Name}");
 
-        await Task.Delay(1000); 
+  //      var result = await _twilioVoiceService.MakeVoiceCallAsync(
+  //    toPhoneNumber: $"{user.PhoneNumber}",
+  //    message: $"مرحبًا {user.FirstName}، نحن من فريق الدعم في موقع CureFusion. نود تذكيرك بأخذ الدواء الذي وصفه لك الطبيب، وهو {reminder.Drug.Name}. نرجو منك الالتزام بالجرعة المحددة في الوقت المحدد. مع تحياتنا، فريق CureFusion.",
+  //    language: "ar-AE",
+  //    voice: "Polly.Hala-Neural"
+  //);
 
-        _logger.LogInformation($"Reminder sent for {reminder.Drug.Name} at {DateTime.Now}");
+
+
+        //_logger.LogInformation($"Reminder sent for {reminder.Drug.Name} at {DateTime.Now} account sid : {result.AccountSid} Ended At {result.EndTime} Duration : {result.Duration} QueueTime : {result.QueueTime}  URI : {result.Uri}");
     }
 }

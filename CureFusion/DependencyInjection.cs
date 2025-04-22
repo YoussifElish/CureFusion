@@ -32,8 +32,9 @@ public static class DependencyInjection
 
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IAppointmentService, AppointmentService>();
-        services.Configure<VonageSettings>(config.GetSection("VonageSettings"));
-        services.AddTransient<IVoiceNotificationService, VoiceNotificationService>();
+        services.Configure<TwilioSettings>(
+    config.GetSection("TwilioSettings"));
+        services.AddTransient<ITwilioVoiceService, TwilioVoiceService>();
 
         services.AddScoped<IDrugReminderService, DrugReminderService>();
         services.AddScoped<IDoctorService, DoctorService>();

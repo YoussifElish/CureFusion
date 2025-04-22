@@ -5,17 +5,15 @@ using SurveyBasket.Abstactions;
 namespace CureFusion.Controllers;
 [Route("[controller]")]
 [ApiController]
-public class AuthController(IAuthService authService, IOptions<JwtOptions> JwtOptions,IVoiceNotificationService voiceNotificationService) : ControllerBase
+public class AuthController(IAuthService authService, IOptions<JwtOptions> JwtOptions) : ControllerBase
 {
     private readonly IAuthService _authService = authService;
-    private readonly IVoiceNotificationService _voiceNotificationService = voiceNotificationService;
     private readonly JwtOptions _jwtOptions = JwtOptions.Value;
 
     [HttpPost("Login")]
     public async Task<IActionResult> LoginAsync(Loginrequest request, CancellationToken cancellationToken)
     {
         var authResult = await _authService.GetTokenAsync(request.Email, request.Password, cancellationToken);
-        //var result = await _voiceNotificationService.SendVoiceNotificationAsync("201093441321", "Hello, this is a test message from CureFusion.", "en-US", 1);
 
         return authResult.IsSuccess ? Ok(authResult.Value) : authResult.ToProblem();
     }

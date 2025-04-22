@@ -8,5 +8,5 @@ public record DoctorAvailabilityRequest (
     TimeSpan To , 
     int SlotDurationInMinutes,
     decimal PricePerSlot ,
-    AppointmentType SessionMode ,
-    string Notes);
+    AppointmentType SessionMode 
+    );

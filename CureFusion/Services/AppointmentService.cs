@@ -104,8 +104,7 @@ public class AppointmentService(ApplicationDbContext dbContext) : IAppointmentSe
             AppointmentDate = request.AppointmentDate,
             AppointmentType = request.AppointmentType,
             Status = Enums.AppointmentStatus.Pending,  
-            DurationInMinutes = request.DurationInMinutes,
-            Notes = "aaaaa"
+            DurationInMinutes = request.DurationInMinutes
         };
         _dbContext.Appointments.Add(newAppointment);
         await _dbContext.SaveChangesAsync(cancellationToken);

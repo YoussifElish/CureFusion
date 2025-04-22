@@ -14,6 +14,5 @@ public class DoctorAvailability
     public int SlotDurationInMinutes { get; set; }   
     public decimal PricePerSlot { get; set; }       
     public AppointmentType SessionMode { get; set; }
-    public string Notes { get; set; }
     public bool IsActive { get; set; } = true;
 }

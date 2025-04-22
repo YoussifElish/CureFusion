@@ -104,7 +104,6 @@ public class DoctorService(ApplicationDbContext context , IHttpContextAccessor h
                 Status = AppointmentStatus.NotReversed, 
                 DurationInMinutes = request.SlotDurationInMinutes, 
                 AppointmentType = request.SessionMode,
-                Notes = request.Notes,
                 DoctorAvailabilityId = doctorAvailability.Id
             };
             appointments.Add(appointment);

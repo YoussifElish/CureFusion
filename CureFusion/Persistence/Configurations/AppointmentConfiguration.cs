@@ -8,6 +8,5 @@ public class AppointmentConfiguration : IEntityTypeConfiguration<Appointment>
       builder.Property(x=>x.AppointmentDate).IsRequired();
       builder.Property(x=>x.Status).IsRequired();
       builder.Property(x=>x.DurationInMinutes).IsRequired();
-      builder.Property(x=>x.Notes).IsRequired().HasMaxLength(1500);
     }
 }
