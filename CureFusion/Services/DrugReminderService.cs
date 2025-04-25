@@ -5,13 +5,13 @@ public class DrugReminderService : IDrugReminderService
 {
     private readonly IBackgroundJobClient _backgroundJobClient;
 
-   
+
     private readonly ILogger<DrugReminderService> _logger;
     private readonly ApplicationDbContext _context;
     private readonly ITwilioVoiceService _twilioVoiceService;
     private readonly UserManager<ApplicationUser> _userManager;
 
-    public DrugReminderService(IBackgroundJobClient backgroundJobClient, ILogger<DrugReminderService> logger, ApplicationDbContext context, ITwilioVoiceService twilioVoiceService,UserManager<ApplicationUser> userManager)
+    public DrugReminderService(IBackgroundJobClient backgroundJobClient, ILogger<DrugReminderService> logger, ApplicationDbContext context, ITwilioVoiceService twilioVoiceService, UserManager<ApplicationUser> userManager)
     {
         _backgroundJobClient = backgroundJobClient;
         _logger = logger;
@@ -24,7 +24,7 @@ public class DrugReminderService : IDrugReminderService
     {
         if (reminder.LastReminderTime == default)
         {
-            reminder.LastReminderTime = reminder.StartDate; 
+            reminder.LastReminderTime = reminder.StartDate;
             _logger.LogInformation($"Setting LastReminderTime to StartDate: {reminder.StartDate}");
         }
 
@@ -59,15 +59,15 @@ public class DrugReminderService : IDrugReminderService
         }
         _logger.LogInformation($"Sending reminder notification for drug {reminder.Drug.Name}");
 
-  //      var result = await _twilioVoiceService.MakeVoiceCallAsync(
-  //    toPhoneNumber: $"{user.PhoneNumber}",
-  //    message: $"مرحبًا {user.FirstName}، نحن من فريق الدعم في موقع CureFusion. نود تذكيرك بأخذ الدواء الذي وصفه لك الطبيب، وهو {reminder.Drug.Name}. نرجو منك الالتزام بالجرعة المحددة في الوقت المحدد. مع تحياتنا، فريق CureFusion.",
-  //    language: "ar-AE",
-  //    voice: "Polly.Hala-Neural"
-  //);
+        //      var result = await _twilioVoiceService.MakeVoiceCallAsync(
+        //    toPhoneNumber: "+201093441321",
+        //    message: $"مرحبًا {user.FirstName}، نحن من فريق الدعم في موقع CureFusion. نود تذكيرك بأخذ الدواء الذي وصفه لك الطبيب، وهو {reminder.Drug.Name}. نرجو منك الالتزام بالجرعة المحددة في الوقت المحدد. مع تحياتنا، فريق CureFusion.",
+        //    language: "ar-AE",
+        //    voice: "Polly.Hala-Neural"
+        //);
 
 
 
-        //_logger.LogInformation($"Reminder sent for {reminder.Drug.Name} at {DateTime.Now} account sid : {result.AccountSid} Ended At {result.EndTime} Duration : {result.Duration} QueueTime : {result.QueueTime}  URI : {result.Uri}");
+        //      _logger.LogInformation($"Reminder sent for {reminder.Drug.Name} at {DateTime.Now} account sid : {result.AccountSid} Ended At {result.EndTime} Duration : {result.Duration} QueueTime : {result.QueueTime}  URI : {result.Uri}");
     }
 }

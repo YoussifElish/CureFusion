@@ -1,4 +1,4 @@
-using Hangfire.Dashboard.BasicAuthorization;
+﻿using Hangfire.Dashboard.BasicAuthorization;
 
 using Hangfire;
 using Serilog;
@@ -10,9 +10,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
-builder.Services.AddScoped<WhatsAppService>();
 
 builder.Services.AddDependencies(builder.Configuration);
+builder.Services.AddScoped<PaymobService>();
+builder.Services.AddHttpClient<PaymobService>();
+
 builder.Host.UseSerilog((context, configuration) =>
 configuration.ReadFrom.Configuration(context.Configuration)
 );
@@ -54,7 +56,10 @@ app.UseHangfireDashboard("/jobs", new DashboardOptions
             }
         })
     }
-}); app.UseCors();
+});
+
+
+app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<SessionValidationMiddleware>();

@@ -104,7 +104,8 @@ public class DoctorService(ApplicationDbContext context , IHttpContextAccessor h
                 Status = AppointmentStatus.NotReversed, 
                 DurationInMinutes = request.SlotDurationInMinutes, 
                 AppointmentType = request.SessionMode,
-                DoctorAvailabilityId = doctorAvailability.Id
+                DoctorAvailabilityId = doctorAvailability.Id,
+                PricePerSlot = request.PricePerSlot
             };
             appointments.Add(appointment);
             startTime += sessionDuration;

@@ -1,13 +1,17 @@
 ﻿using CureFusion.Abstactions;
 using CureFusion.Contracts.Appointment;
+using CureFusion.Enums;
 using CureFusion.Errors;
 using Mapster;
+using Microsoft.EntityFrameworkCore;
 
 namespace CureFusion.Services;
 
-public class AppointmentService(ApplicationDbContext dbContext) : IAppointmentService
+public class AppointmentService(ApplicationDbContext dbContext, IHttpContextAccessor httpContextAccessor, PaymobService paymobService) : IAppointmentService
 {
     private readonly ApplicationDbContext _dbContext = dbContext;
+    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+    private readonly PaymobService _paymobService = paymobService;
 
     public async Task<Result<IEnumerable<AppointmentResponse>>> GetAllAppointments(CancellationToken cancellationToken = default)
     {
@@ -18,7 +22,7 @@ public class AppointmentService(ApplicationDbContext dbContext) : IAppointmentSe
 
         return Result.Success(appointmentResponses);
 
-    
+
     }
 
     public async Task<Result<IEnumerable<AppointmentResponse>>> GetActiveAppointments(CancellationToken cancellationToken = default)
@@ -31,12 +35,14 @@ public class AppointmentService(ApplicationDbContext dbContext) : IAppointmentSe
         return Result.Success(appointmentResponses);
 
     }
-    public async Task<Result> CancelAppointment(int AppointmentId,int userId, CancellationToken cancellationToken = default)
+    public async Task<Result> CancelAppointment(int AppointmentId, CancellationToken cancellationToken = default)
     {
+        var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
         var appointment = await _dbContext.Appointments
             .Where(x => x.Id == AppointmentId)
-            .FirstOrDefaultAsync() ;    
-        if (appointment.DoctorId != userId)
+            .FirstOrDefaultAsync();
+        if (appointment.Doctor.UserId != userId)
         {
             return Result.Failure(AppointmentErrors.NotAuthorized);
         }
@@ -50,75 +56,88 @@ public class AppointmentService(ApplicationDbContext dbContext) : IAppointmentSe
         {
             return Result.Failure(AppointmentErrors.CancelledSession);
         }
-            appointment.Status = Enums.AppointmentStatus.Canceled;
+        appointment.Status = Enums.AppointmentStatus.Canceled;
         _dbContext.Appointments.Update(appointment);
         await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
 
-  
 
-    //public async Task<Result<AppointmentResponse>> RescheduleAppointment(AppointmentReschudleRequest request, string userId, CancellationToken cancellationToken = default)
-    //{
-    //    var appointment = await _dbContext.Appointments
-    //        .Where(x => x.Id == request.Id)
-    //        .FirstOrDefaultAsync();
-    //    if (appointment.DoctorId != userId)
-    //    {
-    //        return Result.Failure<AppointmentResponse>(AppointmentErrors.NotAuthorized);
-    //    }
-
-    //    var isExceededTime = appointment.AppointmentDate < DateTime.UtcNow.AddHours(-1);
-    //    if (isExceededTime)
-    //    {
-    //        return Result.Failure<AppointmentResponse>(AppointmentErrors.ExceedTime);
-    //    }
-    //    appointment.AppointmentDate = request.NewTime;
-    //    _dbContext.Appointments.Update(appointment);
-    //    await _dbContext.SaveChangesAsync(cancellationToken);
-    //    var appointmentResponse = appointment.Adapt<AppointmentResponse>();
-    //    return Result.Success(appointmentResponse);
-    //}
-
-    public async Task<Result<AppointmentResponse>> ReverseAppointment(AppointmentRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<PatientAppointmentResponse>> BookAppointment(PatientAppointmentRequest request, CancellationToken cancellationToken = default)
     {
 
-        var requestedStartTime = request.AppointmentDate;
-        var requestedEndTime = requestedStartTime.AddMinutes(request.DurationInMinutes);
-        var conflictingAppointments = await _dbContext.Appointments
-       .Where(x => x.DoctorId == request.DoctorId && x.Status != Enums.AppointmentStatus.Canceled)
-       .Where(x =>
-           (x.AppointmentDate < requestedEndTime && x.AppointmentDate.AddMinutes(x.DurationInMinutes) > requestedStartTime) 
-       )
-       .AnyAsync(cancellationToken);
+        var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        if (conflictingAppointments)
-        {
-            return Result.Failure<AppointmentResponse>(Errors.AppointmentErrors.NotAvaliable);
-        }
+        var appointment = await _dbContext.Appointments
+            .FirstOrDefaultAsync(x => x.Id == request.AppointmentId, cancellationToken);
 
-        var newAppointment = new Appointment
-        {
-           
-            DoctorId = request.DoctorId,
-            AppointmentDate = request.AppointmentDate,
-            AppointmentType = request.AppointmentType,
-            Status = Enums.AppointmentStatus.Pending,  
-            DurationInMinutes = request.DurationInMinutes
-        };
-        _dbContext.Appointments.Add(newAppointment);
+        if (appointment is null)
+            return Result.Failure<PatientAppointmentResponse>(AppointmentErrors.NotFound);
+
+        var isAlreadyBooked = await _dbContext.patientAppointments
+            .AnyAsync(x => x.AppointmentId == request.AppointmentId && (x.Status == AppointmentStatus.Completed
+                    || x.Status == AppointmentStatus.Pending
+                    || x.Status == AppointmentStatus.Confirmed),
+              cancellationToken);
+
+        if (isAlreadyBooked)
+            return Result.Failure<PatientAppointmentResponse>(AppointmentErrors.AlreadyBooked);
+
+
+        var patientAppointment = request.Adapt<PatientAppointment>();
+        patientAppointment.BookedAt = DateTime.UtcNow;
+        patientAppointment.Status = AppointmentStatus.Pending;
+        patientAppointment.UserId = userId;
+
+
+        var paymentLink = await _paymobService.GeneratePaymentLink(appointment.PricePerSlot, appointment.Id);
+        patientAppointment.PaymentUrl = paymentLink;
+        _dbContext.patientAppointments.Add(patientAppointment);
         await _dbContext.SaveChangesAsync(cancellationToken);
-        var appointmentResponse = newAppointment.Adapt<AppointmentResponse>();
-        return Result.Success(appointmentResponse);
+
+        var response = patientAppointment.Adapt<PatientAppointmentResponse>();
+        
+
+
+        return Result.Success(response);
     }
+
 
     public Task<Result> CancelAppointment(int AppointmentId, string userId, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }
 
-    public Task<Result<AppointmentResponse>> RescheduleAppointment(AppointmentReschudleRequest request, string userId, CancellationToken cancellationToken = default)
+    public async Task<Result> ConfirmAppointmentPayment(int appointmentId, bool isSuccess, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var patientAppointment = await _dbContext.patientAppointments
+            .FirstOrDefaultAsync(x => x.AppointmentId == appointmentId && x.Status == AppointmentStatus.Pending || x.Status == AppointmentStatus.NotReversed, cancellationToken);
+
+        var appointment = await _dbContext.Appointments
+            .FirstOrDefaultAsync(x => x.Id == appointmentId && (x.Status == AppointmentStatus.Pending || x.Status == AppointmentStatus.NotReversed), cancellationToken);
+
+        if (appointment is null || patientAppointment is null)
+            return Result.Failure(AppointmentErrors.NotFound);
+
+        if (isSuccess)
+        {
+            patientAppointment.Status = AppointmentStatus.Confirmed;
+            appointment.Status = AppointmentStatus.Confirmed;
+        }
+        else
+        {
+            patientAppointment.Status = AppointmentStatus.Canceled;
+            appointment.Status = AppointmentStatus.NotReversed;
+        }
+
+        patientAppointment.StatusChangedAt = DateTime.UtcNow;
+
+        _dbContext.patientAppointments.Update(patientAppointment);
+        _dbContext.Appointments.Update(appointment);
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return isSuccess ? Result.Success(patientAppointment) : Result.Failure(AppointmentErrors.PaymentFailed);
     }
+
 }

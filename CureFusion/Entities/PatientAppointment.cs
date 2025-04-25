@@ -9,7 +9,7 @@ public class PatientAppointment
     public int AppointmentId { get; set; }
     public Appointment Appointment { get; set; }
 
-    public int UserId { get; set; }
+    public string UserId { get; set; }
     public ApplicationUser User { get; set; }
 
     public DateTime BookedAt { get; set; } = DateTime.UtcNow;
@@ -18,4 +18,5 @@ public class PatientAppointment
     public DateTime? StatusChangedAt { get; set; }
 
     public string Notes { get; set; }
+    public string? PaymentUrl { get; set; }
 }

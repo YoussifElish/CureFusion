@@ -1,4 +1,5 @@
 ﻿using CureFusion.Contracts.Authentication;
+using CureFusion.Services;
 using Microsoft.AspNetCore.Identity.Data;
 using SurveyBasket.Abstactions;
 
@@ -11,7 +12,7 @@ public class AuthController(IAuthService authService, IOptions<JwtOptions> JwtOp
     private readonly JwtOptions _jwtOptions = JwtOptions.Value;
 
     [HttpPost("Login")]
-    public async Task<IActionResult> LoginAsync(Loginrequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> LoginAsync(Loginrequest request, CancellationToken     cancellationToken)
     {
         var authResult = await _authService.GetTokenAsync(request.Email, request.Password, cancellationToken);
 

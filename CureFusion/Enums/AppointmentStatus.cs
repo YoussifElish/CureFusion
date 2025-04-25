@@ -2,9 +2,10 @@
 
 public enum AppointmentStatus
 {
-    Pending,   // recersed but waiting payment
+    Pending,   // booked but waiting payment
     Confirmed, 
     Canceled,  
     Completed ,
-    NotReversed
+    NotReversed,
+    PaymentFailed
 }
