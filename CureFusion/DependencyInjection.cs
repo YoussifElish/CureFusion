@@ -37,6 +37,7 @@ public static class DependencyInjection
         services.AddTransient<ITwilioVoiceService, TwilioVoiceService>();
 
         services.AddScoped<IDrugReminderService, DrugReminderService>();
+        services.AddScoped<IDrugService, DrugService>();
         services.AddScoped<IDoctorService, DoctorService>();
         services.AddScoped<IEmailSender, EmailService>();
         services.AddScoped<ISessionService, SessionService>();
