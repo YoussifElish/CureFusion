@@ -41,6 +41,7 @@ public static class DependencyInjection
         services.AddScoped<IDrugService, DrugService>();
         services.AddScoped<IDoctorService, DoctorService>();
         services.AddScoped<IEmailSender, EmailService>();
+        services.AddScoped<IArticleService, ArticleService>();
         services.AddScoped<IFileService, FileService>();
         services.AddScoped<ISessionService, SessionService>();
 

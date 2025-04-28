@@ -63,6 +63,7 @@ app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<SessionValidationMiddleware>();
+app.UseRouting();
 app.MapControllers();
 
 app.Run();
