@@ -7,4 +7,7 @@ public class Drug
     public string SideEffect { get; set; } = string.Empty;
     public int Dosage { get; set; }
     public string Interaction { get; set; }=string.Empty;
+    public UploadedFile DrugImage { get; set; }
+    public Guid? DrugImageId { get; set; }
+
 }

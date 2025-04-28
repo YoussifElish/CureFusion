@@ -7,6 +7,7 @@ using MapsterMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Configuration;
+using RealState.Services;
 using SurveyBasket.Services;
 
 namespace CureFusion;
@@ -40,6 +41,7 @@ public static class DependencyInjection
         services.AddScoped<IDrugService, DrugService>();
         services.AddScoped<IDoctorService, DoctorService>();
         services.AddScoped<IEmailSender, EmailService>();
+        services.AddScoped<IFileService, FileService>();
         services.AddScoped<ISessionService, SessionService>();
 
 

@@ -1,4 +1,5 @@
 ﻿using CureFusion.Abstactions.Consts;
+using CureFusion.Contracts.Files;
 using CureFusion.Contracts.Medicine;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -33,9 +34,9 @@ public class DrugController(IDrugService drug) : ControllerBase
     
     }
     [HttpPost("Add")]
-    public async Task<IActionResult> AddAsync([FromBody] DrugRequest Request, CancellationToken cancellationToken)
+    public async Task<IActionResult> AddAsync([FromForm] DrugRequest Request, [FromForm] UploadImageRequest drugImage, CancellationToken cancellationToken)
     {
-        var Result = await _drug.AddDrugAsync(Request, cancellationToken);
+        var Result = await _drug.AddDrugAsync(Request, drugImage, cancellationToken);
         return Result.IsSuccess 
             ? CreatedAtAction(nameof(Getasync), new { id = Result.Value!.Id },Result.Value)
             : Result.ToProblem();

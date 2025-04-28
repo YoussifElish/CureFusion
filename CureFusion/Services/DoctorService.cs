@@ -1,19 +1,22 @@
 ﻿using CureFusion.Abstactions;
 using CureFusion.Contracts.Doctor;
+using CureFusion.Contracts.Files;
 using CureFusion.Entities;
 using CureFusion.Enums;
 using CureFusion.Errors;
 using Mapster;
+using RealState.Services;
 
 namespace CureFusion.Services;
 
-public class DoctorService(ApplicationDbContext context , IHttpContextAccessor httpContextAccessor,ISessionService sessionService ) : IDoctorService
+public class DoctorService(ApplicationDbContext context , IHttpContextAccessor httpContextAccessor,ISessionService sessionService ,IFileService fileService) : IDoctorService
 {
     private readonly ApplicationDbContext _context = context;
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
     private readonly ISessionService _sessionService = sessionService;
+    private readonly IFileService _fileService = fileService;
 
-    public async Task<Result> RegisterAsDoctor(DoctorRegisterRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result> RegisterAsDoctor(DoctorRegisterRequest request, RegisterDoctorImageRequest imageRequest, CancellationToken cancellationToken = default)
     {
        // var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString()?.Replace("Bearer ", string.Empty);
        //var session = await _sessionService.IsSessionValidAsync(token, cancellationToken);
@@ -42,9 +45,14 @@ public class DoctorService(ApplicationDbContext context , IHttpContextAccessor h
 
            else if (isRegisteredBefore.accountStatus == AccountStatus.Rejected)
             {
+                var doctorCertificateImage = await _fileService.UploadImagesAsync(imageRequest.CertificateImage, cancellationToken);
+                var doctorProfileImage = await _fileService.UploadImagesAsync(imageRequest.ProfileImage, cancellationToken);
+
                 isRegisteredBefore.Specialization = request.Specialization;
                 isRegisteredBefore.Bio = request.Bio;
                 isRegisteredBefore.accountStatus = AccountStatus.Pending;
+                isRegisteredBefore.CertificationDocumentId = doctorCertificateImage.Id;
+                isRegisteredBefore.ProfileImageId = doctorProfileImage.Id;
 
                 await _context.SaveChangesAsync(cancellationToken);
 

@@ -1,25 +1,28 @@
 ﻿using CureFusion.Abstactions;
 using CureFusion.Contracts.Medicine;
-using Vonage.Voice;
 using Mapster;
-
 using CureFusion.Errors;
 using CureFusion.Entities;
 using Microsoft.EntityFrameworkCore;
+using CureFusion.Contracts.Files;
+using RealState.Services;
 
 namespace CureFusion.Services;
 
-public class DrugService(ApplicationDbContext Context) : IDrugService
+public class DrugService(ApplicationDbContext Context, IFileService fileService) : IDrugService
 {
     private readonly ApplicationDbContext _context = Context;
+    private readonly IFileService _fileService = fileService;
 
-    public async Task<Result<DrugResponse>> AddDrugAsync(DrugRequest request, CancellationToken cancellationToken)
+    public async Task<Result<DrugResponse>> AddDrugAsync(DrugRequest request, UploadImageRequest drugImage,  CancellationToken cancellationToken)
     {
         var isexsist=await _context.Drugs.AnyAsync(x=>x.Name==request.Name);
         if (isexsist)
             return Result.Failure<DrugResponse>(DrugError.Duplicatedrug);
-        var drug = request.Adapt<Drug>();
 
+        var image = await _fileService.UploadImagesAsync(drugImage.Image, cancellationToken);
+        var drug = request.Adapt<Drug>();
+        drug.DrugImageId = image.Id;
         await _context.AddAsync(drug, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
 

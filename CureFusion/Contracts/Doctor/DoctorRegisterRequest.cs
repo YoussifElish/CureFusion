@@ -4,6 +4,5 @@ public record DoctorRegisterRequest
 (
    string Specialization,
    string Bio,
-   int YearsOfExperience,
-   string CertificationDocumentUrl
+   int YearsOfExperience
  );

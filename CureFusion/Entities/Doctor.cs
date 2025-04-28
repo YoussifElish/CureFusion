@@ -12,8 +12,12 @@ public class Doctor
     public int YearsOfExperience { get; set; }
     public bool IsActive { get; set; } = true;
     public AccountStatus accountStatus  { get; set; } = AccountStatus.Pending;
-    public string CertificationDocumentUrl { get; set; } = string.Empty;
     public double Rating { get; set; } = 0.0;
     public int TotalReviews { get; set; } = 0;
+    public Guid? ProfileImageId { get; set; }
+    public UploadedFile ProfileImage { get; set; }
+
+    public Guid? CertificationDocumentId { get; set; }
+    public UploadedFile CertificationDocument { get; set; }
 
 }

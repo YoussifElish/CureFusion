@@ -9,4 +9,5 @@ public class Patient
     public string CurrentMedication { get; set; } = string.Empty;
     public string Gender { get; set; } = string.Empty;
 
+
 }

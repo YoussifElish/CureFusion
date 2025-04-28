@@ -24,6 +24,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<PatientAppointment> patientAppointments { get; set; } 
     public DbSet<DrugReminder> DrugReminders { get; set; } 
     public DbSet<Appointment> Appointments { get; set; }
+    public DbSet<UploadedFile> UploadedFiles { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

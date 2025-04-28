@@ -1,4 +1,5 @@
 ﻿using CureFusion.Contracts.Authentication;
+using CureFusion.Contracts.Files;
 using CureFusion.Services;
 using Microsoft.AspNetCore.Identity.Data;
 using SurveyBasket.Abstactions;
@@ -37,9 +38,9 @@ public class AuthController(IAuthService authService, IOptions<JwtOptions> JwtOp
     }
     [HttpPost("register-as-doctor")]
 
-    public async Task<IActionResult> RegisterAsDoctor([FromBody] RegisterAsDoctorRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> RegisterAsDoctor([FromForm] RegisterAsDoctorRequest request, [FromForm]  RegisterDoctorImageRequest imageRequest, CancellationToken cancellationToken)
     {
-        var authResult = await _authService.RegisterDoctorAsync(request, cancellationToken);
+        var authResult = await _authService.RegisterDoctorAsync(request, imageRequest, cancellationToken);
         return authResult.IsSuccess ? Ok() : authResult.ToProblem();
 
     }

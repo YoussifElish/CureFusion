@@ -13,10 +13,12 @@ using CureFusion.Abstactions.Consts;
 using Microsoft.EntityFrameworkCore;
 using CureFusion.Enums;
 using System.Threading;
+using CureFusion.Contracts.Files;
+using RealState.Services;
 
 namespace CureFusion.Services;
 
-public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider jwtProvider, IHttpContextAccessor httpContextAccessor, IEmailSender emailSender,ILogger<AuthService> logger, SignInManager<ApplicationUser> signInManager,ApplicationDbContext context ,ISessionService sessionService) : IAuthService
+public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider jwtProvider, IHttpContextAccessor httpContextAccessor, IEmailSender emailSender,ILogger<AuthService> logger, SignInManager<ApplicationUser> signInManager,ApplicationDbContext context ,ISessionService sessionService,IFileService fileService) : IAuthService
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IJwtProvider _jwtProvider = jwtProvider;
@@ -26,6 +28,7 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
     private readonly ApplicationDbContext _context = context;
     private readonly ISessionService _sessionService = sessionService;
+    private readonly IFileService _fileService = fileService;
     private readonly int _refreshtokenexpirydate = 1;
 
     public async Task<Result<AuthResponse>> GetTokenAsync(string email, string password, CancellationToken cancellationToken = default)
@@ -82,6 +85,7 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
             return Result.Failure(AuthErrors.DuplicatedEmail);
         var user = request.Adapt<ApplicationUser>();
         user.EmailConfirmed = false;
+        user.PhoneNumber = request.PhoneNumber;
         var result = await _userManager.CreateAsync(user, request.Password);
 
         if (result.Succeeded)
@@ -116,7 +120,7 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
     }
 
 
-    public async Task<Result> RegisterDoctorAsync(RegisterAsDoctorRequest request, CancellationToken cancellationToken)
+    public async Task<Result> RegisterDoctorAsync(RegisterAsDoctorRequest request, RegisterDoctorImageRequest imageRequest, CancellationToken cancellationToken)
     {
         var emailIsExist = await _userManager.Users.AnyAsync(x => x.Email == request.Email, cancellationToken);
         if (emailIsExist)
@@ -131,18 +135,23 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
             _logger.LogInformation("Confirmation Code: {Code}", code);
             await SendConfimartionEmail(user, code);
+            var doctorCertificateImage = await _fileService.UploadImagesAsync(imageRequest.CertificateImage, cancellationToken);
+            var doctorProfileImage = await _fileService.UploadImagesAsync(imageRequest.ProfileImage, cancellationToken);
 
             var newDoctor = new Doctor
             {
                 UserId = user.Id,
                 Specialization = request.Specialization,
                 Bio = request.Bio,
-                CertificationDocumentUrl = request.CertificationDocumentUrl,
-                accountStatus = AccountStatus.Pending
+                //CertificationDocumentUrl = request.CertificationDocumentUrl,
+                accountStatus = AccountStatus.Pending,
+                YearsOfExperience = request.YearsOfExperience,
+                CertificationDocumentId = doctorCertificateImage.Id,
+                ProfileImageId = doctorProfileImage.Id
+
             };
             _context.Doctors.Add(newDoctor);
             await _context.SaveChangesAsync(cancellationToken);
-
             return Result.Success();
         }
 
@@ -178,26 +187,18 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
 
         if (user.EmailConfirmed)
             return Result.Failure(AuthErrors.DuplicatedConfirmation);
-
-
-        var code = request.Code;
-        try
-        {
-            code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
-
-        }
-        catch (FormatException)
-        {
+        if (user.EmailConfirmationCode != request.Code || user.EmailConfirmationCodeExpiration < DateTime.UtcNow)
             return Result.Failure(AuthErrors.InvalidCode);
-        }
-        var result = await _userManager.ConfirmEmailAsync(user, code);
-        if (result.Succeeded)
-        {
-            await _userManager.AddToRoleAsync(user, DefaultRoles.Member);
-            return Result.Success();
-        }
-        var error = result.Errors.First();
-        return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
+
+
+        user.EmailConfirmed = true;
+        user.EmailConfirmationCode = null;
+        user.EmailConfirmationCodeExpiration = null;
+
+        await _userManager.UpdateAsync(user);
+        await _userManager.AddToRoleAsync(user, DefaultRoles.Member);
+
+        return Result.Success();
 
     }
 
@@ -210,8 +211,10 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
             return Result.Failure(AuthErrors.DuplicatedConfirmation);
 
 
-        var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+        var random = new Random();
+        var code = random.Next(100000, 999999).ToString();
+        user.EmailConfirmationCode = code;
+        user.EmailConfirmationCodeExpiration = DateTime.UtcNow.AddMinutes(10);
         _logger.LogInformation("Confirmation Code: {Code}", code);
         await SendConfimartionEmail(user, code);
 
@@ -227,8 +230,11 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
         if (!user.EmailConfirmed)
             return Result.Failure(AuthErrors.EmailNotConfirmed);
 
-        var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+        var random = new Random();
+        var code = random.Next(100000, 999999).ToString();
+        user.ResetPasswordCode = code;
+        user.ResetPasswordCodeExpiration = DateTime.UtcNow.AddMinutes(10);
+        await _userManager.UpdateAsync(user);
         _logger.LogInformation("Reset Code: {Code}", code);
         await SendResetPasswordEmail(user, code);
         return Result.Success();
@@ -239,11 +245,15 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user is null || !user.EmailConfirmed)
             return Result.Failure(AuthErrors.InvalidCode);
+        if (user.ResetPasswordCode != request.Code || user.ResetPasswordCodeExpiration < DateTime.UtcNow)
+            return Result.Failure(AuthErrors.InvalidCode);
+
+
         IdentityResult result;
         try
         {
-            var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Code));
-            result = await _userManager.ResetPasswordAsync(user, code, request.NewPassword);
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            result = await _userManager.ResetPasswordAsync(user, token, request.NewPassword);
 
         }
         catch (FormatException)
@@ -252,7 +262,12 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
         }
 
         if (result.Succeeded)
+        {
+            user.ResetPasswordCode = null;
+            user.ResetPasswordCodeExpiration = null;
+            await _userManager.UpdateAsync(user);
             return Result.Success();
+        }
         var error = result.Errors.First();
         return Result.Failure(new(error.Code, error.Description, StatusCodes.Status401Unauthorized));
 
@@ -297,14 +312,14 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
     }
     private async Task SendResetPasswordEmail(ApplicationUser user, string code)
     {
-        var origin = _httpContextAccessor.HttpContext?.Request.Headers.Origin;
+
         var emailBody = EmailBodyBuider.GenerateEmailBody("ForgetPassword", new Dictionary<string, string>
                 {
                     {"{{Product_Name}}",user.FirstName},
                     {"{{name}}",user.FirstName},
-                    {"{{action_url}}",$"{origin}/auth/forgetPassword?Email={user.Email}&code={code}"}
+                    {"{{action_url}}",$"{code}"}
                 });
-        BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "✅CureFusion: Reset Password", emailBody));
+        BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "✅CureFusion : Reset Password", emailBody));
 
         await Task.CompletedTask;
 
@@ -315,7 +330,7 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
         var emailBody = EmailBodyBuider.GenerateEmailBody("EmailConfirmation", new Dictionary<string, string>
         {
             {"{{name}}", user.FirstName},
-            {"{{action_url}}", $"{origin}/auth/emailConfirmation?userId={user.Id}&code={code}"}
+            {"{{action_url}}", $"{code}"}
         });
 
         BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "✅CureFusion: Email Confirmation", emailBody));

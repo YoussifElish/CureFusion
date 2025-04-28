@@ -23,8 +23,8 @@ public class DoctorConfiguration : IEntityTypeConfiguration<Doctor>
         builder.Property(d => d.accountStatus).HasDefaultValue(AccountStatus.Pending);
 
 
-        builder.Property(d => d.CertificationDocumentUrl)
-            .HasMaxLength(500);
+        //builder.Property(d => d.CertificationDocumentUrl)
+        //    .HasMaxLength(500);
 
         builder.Property(d => d.Rating)
             .HasDefaultValue(0.0);

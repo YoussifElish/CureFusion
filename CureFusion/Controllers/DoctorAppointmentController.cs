@@ -1,5 +1,6 @@
 ﻿using CureFusion.Abstactions.Consts;
 using CureFusion.Contracts.Doctor;
+using CureFusion.Contracts.Files;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,10 +18,10 @@ namespace CureFusion.Controllers
 
         [Authorize(Roles = DefaultRoles.Member)]
         [HttpPost("Register")]
-        public async Task<IActionResult> RegisterAsDoctor([FromBody] DoctorRegisterRequest request, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> RegisterAsDoctor([FromForm] DoctorRegisterRequest request, [FromForm] RegisterDoctorImageRequest imageRequest, CancellationToken cancellationToken = default)
         {
             
-            var result = await _doctorService.RegisterAsDoctor(request, cancellationToken);
+            var result = await _doctorService.RegisterAsDoctor(request, imageRequest, cancellationToken);
             return result.IsSuccess ? Ok() : result.ToProblem(); // TODO : Change it to Created at action after adding the get action
         }
 
