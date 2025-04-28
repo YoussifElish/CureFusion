@@ -1,7 +1,7 @@
 ﻿namespace CureFusion.Contracts.Authentication
 {
     public record ConfirmEmailRequest(
-        string UserId,
+        string Email,
         String Code
         );
 }

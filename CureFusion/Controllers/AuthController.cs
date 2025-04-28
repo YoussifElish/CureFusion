@@ -52,22 +52,9 @@ public class AuthController(IAuthService authService, IOptions<JwtOptions> JwtOp
         return isRevoked.IsSuccess ? Ok() : isRevoked.ToProblem();
 
     }
-    [HttpPost("confirm-email")]
+  
 
-    public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailRequest request)
-    {
-        var authResult = await _authService.ConfirmEmailAsync(request);
-        return authResult.IsSuccess ? Ok() : authResult.ToProblem();
-
-    }
-
-    [HttpPost("resend-confirmation-email")]
-
-    public async Task<IActionResult> ResendConfirmationMail([FromBody] Contracts.Authentication.ResendConfirmationEmailRequest request)
-    {
-        var authResult = await _authService.ResendConfirmEmailAsync(request);
-        return authResult.IsSuccess ? Ok() : authResult.ToProblem();
-    }
+ 
     [HttpPost("forget-password")]
 
     public async Task<IActionResult> ForgetPassword([FromBody] ForgetPasswordRequest request)

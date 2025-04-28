@@ -24,7 +24,16 @@ builder.Services.AddSwaggerGen();
 builder.Services.Configure<WhatsAppConfigurations>(
     builder.Configuration.GetSection("WhatsAppConfigurations"));
 
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins",
+         builder =>
+         {
+             builder.AllowAnyOrigin()
+                 .AllowAnyMethod()
+                 .AllowAnyHeader();
+         });
+});
 
 var app = builder.Build();
 
@@ -63,6 +72,7 @@ app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<SessionValidationMiddleware>();
+app.UseCors("AllowAllOrigins");
 app.UseRouting();
 app.MapControllers();
 

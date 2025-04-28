@@ -178,7 +178,7 @@ public class ArticleService(ApplicationDbContext context, IFileService fileServi
              article.Author?.UserName ?? "Unknown",
              article.HealthArticleImage != null ? $"{_filesPath}/{article.HealthArticleImage.StoredFileName}" : null
          );
-
+        await IncrementArticleViewCountAsync(response.Id, cancellationToken);
         return Result.Success(response);
     }
 

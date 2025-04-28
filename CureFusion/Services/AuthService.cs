@@ -84,14 +84,19 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
         if (emailIsExist)
             return Result.Failure(AuthErrors.DuplicatedEmail);
         var user = request.Adapt<ApplicationUser>();
-        user.EmailConfirmed = false;
+        user.EmailConfirmed = true;
         user.PhoneNumber = request.PhoneNumber;
         var result = await _userManager.CreateAsync(user, request.Password);
 
         if (result.Succeeded)
         {
-            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
+            var random = new Random();
+            var code = random.Next(100000, 999999).ToString();
+            user.EmailConfirmationCode = code;
+            user.EmailConfirmationCodeExpiration = DateTime.UtcNow.AddMinutes(10);
+            _context.Update(user);
+            await _context.SaveChangesAsync(cancellationToken);
             _logger.LogInformation("Confirmation Code: {Code}", code);
             await SendConfimartionEmail(user, code);
 
@@ -131,9 +136,15 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
 
         if (result.Succeeded)
         {
-            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
+            var random = new Random();
+            var code = random.Next(100000, 999999).ToString();
+          
             _logger.LogInformation("Confirmation Code: {Code}", code);
+            user.EmailConfirmationCode = code;
+            user.EmailConfirmationCodeExpiration = DateTime.UtcNow.AddMinutes(10);
+            _context.Update(user);
+            await _context.SaveChangesAsync(cancellationToken);
             await SendConfimartionEmail(user, code);
             var doctorCertificateImage = await _fileService.UploadImagesAsync(imageRequest.CertificateImage, cancellationToken);
             var doctorProfileImage = await _fileService.UploadImagesAsync(imageRequest.ProfileImage, cancellationToken);
@@ -180,49 +191,7 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
         await _userManager.UpdateAsync(user);
         return Result.Success();
     }
-    public async Task<Result> ConfirmEmailAsync(ConfirmEmailRequest request)
-    {
-        if (await _userManager.FindByIdAsync(request.UserId) is not { } user)
-            return Result.Failure(AuthErrors.InvalidCode);
-
-        if (user.EmailConfirmed)
-            return Result.Failure(AuthErrors.DuplicatedConfirmation);
-        if (user.EmailConfirmationCode != request.Code || user.EmailConfirmationCodeExpiration < DateTime.UtcNow)
-            return Result.Failure(AuthErrors.InvalidCode);
-
-
-        user.EmailConfirmed = true;
-        user.EmailConfirmationCode = null;
-        user.EmailConfirmationCodeExpiration = null;
-
-        await _userManager.UpdateAsync(user);
-        await _userManager.AddToRoleAsync(user, DefaultRoles.Member);
-
-        return Result.Success();
-
-    }
-
-    public async Task<Result> ResendConfirmEmailAsync(Contracts.Authentication.ResendConfirmationEmailRequest request)
-    {
-        if (await _userManager.FindByEmailAsync(request.Email) is not { } user)
-            return Result.Success();
-
-        if (user.EmailConfirmed)
-            return Result.Failure(AuthErrors.DuplicatedConfirmation);
-
-
-        var random = new Random();
-        var code = random.Next(100000, 999999).ToString();
-        user.EmailConfirmationCode = code;
-        user.EmailConfirmationCodeExpiration = DateTime.UtcNow.AddMinutes(10);
-        _logger.LogInformation("Confirmation Code: {Code}", code);
-        await SendConfimartionEmail(user, code);
-
-
-        return Result.Success();
-
-    }
-
+   
     public async Task<Result> SentResetPasswordCodeAsync(string email)
     {
         if (await _userManager.FindByEmailAsync(email) is not { } user)
