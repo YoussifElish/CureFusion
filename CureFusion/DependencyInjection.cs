@@ -44,6 +44,7 @@ public static class DependencyInjection
         services.AddScoped<IArticleService, ArticleService>();
         services.AddScoped<IFileService, FileService>();
         services.AddScoped<ISessionService, SessionService>();
+        services.AddScoped<ISubscriptionService, SubscriptionService>();
 
 
         services.Configure<MailSettings>(config.GetSection(nameof(MailSettings)));

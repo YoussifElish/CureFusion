@@ -66,14 +66,10 @@ app.UseHangfireDashboard("/jobs", new DashboardOptions
         })
     }
 });
-
 app.UseStaticFiles();
-app.UseCors();
-app.UseAuthentication();
+app.UseCors("AllowAllOrigins");
 app.UseAuthorization();
 app.UseMiddleware<SessionValidationMiddleware>();
-app.UseCors("AllowAllOrigins");
-app.UseRouting();
 app.MapControllers();
 
 app.Run();
