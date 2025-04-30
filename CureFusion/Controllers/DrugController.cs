@@ -23,7 +23,7 @@ public class DrugController(IDrugService drug) : ControllerBase
             return Result.IsSuccess ? Ok(Result.Value) : Result.ToProblem();
           
         }
-    //[Authorize(Roles =DefaultRoles.AdminRoleId+","+ DefaultRoles.DoctorRoleId)]
+    
     [HttpGet("{id}")]
     public async Task<IActionResult> Getasync([FromRoute]int id,CancellationToken cancellationToken)
     {
@@ -33,6 +33,7 @@ public class DrugController(IDrugService drug) : ControllerBase
             : Result.ToProblem();
     
     }
+    [Authorize(Roles =DefaultRoles.AdminRoleId+","+ DefaultRoles.DoctorRoleId)]
     [HttpPost("Add")]
     public async Task<IActionResult> AddAsync([FromForm] DrugRequest Request, [FromForm] UploadImageRequest drugImage, CancellationToken cancellationToken)
     {
@@ -42,7 +43,7 @@ public class DrugController(IDrugService drug) : ControllerBase
             : Result.ToProblem();
 
     }
-
+    [Authorize(Roles =DefaultRoles.AdminRoleId+","+ DefaultRoles.DoctorRoleId)]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateAsync([FromRoute] int id,[FromBody] DrugRequest Request, CancellationToken cancellationToken)
     {
@@ -53,7 +54,7 @@ public class DrugController(IDrugService drug) : ControllerBase
         //i will check it again 
 
     }
-
+    [Authorize(Roles =DefaultRoles.AdminRoleId+","+ DefaultRoles.DoctorRoleId)]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteAsync([FromRoute] int id, CancellationToken cancellationToken)
     {

@@ -4,6 +4,7 @@ using CureFusion.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CureFusion.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250430134114_Updatingtheapplicationuserproperty")]
+    partial class Updatingtheapplicationuserproperty
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -233,7 +236,7 @@ namespace CureFusion.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@CUREFUSION.COM",
                             NormalizedUserName = "ADMIN@CUREFUSION.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEDjhQQtPRX/KbxaqxiedU6cN7tznHOAx3lrNa2H2TtuMO5qFtpN1dOdZG68/lB01Iw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEFAr292MxiUg8xUldZPdtjlEyNw+tSmB5vwKTjFv7wqka/g71sRcVXH1064Jdt+S3w==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "07DB2EDBB86447CA8B2EC4E293AE89F5",
                             TwoFactorEnabled = false,

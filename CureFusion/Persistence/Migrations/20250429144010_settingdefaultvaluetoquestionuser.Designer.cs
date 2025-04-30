@@ -4,6 +4,7 @@ using CureFusion.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CureFusion.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250429144010_settingdefaultvaluetoquestionuser")]
+    partial class settingdefaultvaluetoquestionuser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -233,7 +236,7 @@ namespace CureFusion.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@CUREFUSION.COM",
                             NormalizedUserName = "ADMIN@CUREFUSION.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEDjhQQtPRX/KbxaqxiedU6cN7tznHOAx3lrNa2H2TtuMO5qFtpN1dOdZG68/lB01Iw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEPCPiN5pEsWlqkIXanBoA3u/C6Hff/JwznPah9i8cypRijmz/iedtGZtIyodDMomZQ==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "07DB2EDBB86447CA8B2EC4E293AE89F5",
                             TwoFactorEnabled = false,
@@ -918,7 +921,7 @@ namespace CureFusion.Persistence.Migrations
                         .IsRequired();
 
                     b.HasOne("CureFusion.Entities.ApplicationUser", "User")
-                        .WithMany("Answers")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1091,7 +1094,7 @@ namespace CureFusion.Persistence.Migrations
             modelBuilder.Entity("CureFusion.Entities.Question", b =>
                 {
                     b.HasOne("CureFusion.Entities.ApplicationUser", "User")
-                        .WithMany("Questions")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1178,13 +1181,6 @@ namespace CureFusion.Persistence.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("CureFusion.Entities.ApplicationUser", b =>
-                {
-                    b.Navigation("Answers");
-
-                    b.Navigation("Questions");
                 });
 
             modelBuilder.Entity("CureFusion.Entities.Question", b =>
