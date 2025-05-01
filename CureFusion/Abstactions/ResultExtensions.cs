@@ -1,6 +1,6 @@
-﻿using CureFusion.Abstactions;
+﻿
 
-namespace SurveyBasket.Abstactions
+namespace CureFusion.Abstactions
 {
     public static class ResultExtensions
     {

@@ -1,11 +1,4 @@
-﻿using CureFusion.Abstactions;
-using CureFusion.Contracts.Answer;
-using CureFusion.Contracts.Common;
-using CureFusion.Contracts.Question;
-using CureFusion.Enums;
-using CureFusion.Errors;
-using Mapster;
-
+﻿
 namespace CureFusion.Services;
 
 public class AnswerService(ApplicationDbContext context) : IAnswerService
@@ -39,6 +32,27 @@ public class AnswerService(ApplicationDbContext context) : IAnswerService
 
     }
 
+    public async Task<Result> DeleteAnswerAsync(int id, int questionId, string userId, CancellationToken cancellationToken)
+    {
+        var question = await _context.Questions.FindAsync(questionId, cancellationToken);
+        if (question is null)
+        {
+            return Result.Failure<AnswerResponse>(QuestionError.QuestionNotFound);
+        }
+        var answer = await _context.Answers.FindAsync(id, cancellationToken);
+        if (answer is null)
+        {
+            return Result.Failure<AnswerResponse>(AnswerErrors.NotFound);
+        }
+        if (answer.UserId != userId)
+        {
+            return Result.Failure<AnswerResponse>(AnswerErrors.Unauthorized);
+        }
+        _context.Answers.Remove(answer);
+        await _context.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
+
     public  async Task<Result<IEnumerable<AnswerResponse>>> GetAllAnswers(int QuestionId, CancellationToken cancellationToken)
     {
 
@@ -64,5 +78,29 @@ public class AnswerService(ApplicationDbContext context) : IAnswerService
         return response is not null ? Result.Success<IEnumerable<AnswerResponse>>(response) : Result.Failure<IEnumerable<AnswerResponse>>(QuestionError.QuestionNotFound);
     }
 
-  
+    public async Task<Result> UpdateAnswerAsync(int id, int questionId, AnswerRequest content, string userId, CancellationToken cancellationToken)
+    {
+        var question = await _context.Questions.FindAsync(questionId, cancellationToken);
+        if (question is null)
+        {
+            return Result.Failure<AnswerResponse>(QuestionError.QuestionNotFound);
+        }
+        var answer = await _context.Answers.FindAsync(id, cancellationToken);
+        if (answer is null)
+        {
+            return Result.Failure<AnswerResponse>(AnswerErrors.NotFound);
+        }
+
+        if (answer.UserId != userId)
+        {
+            return Result.Failure<AnswerResponse>(AnswerErrors.Unauthorized);
+        }
+        answer.Content = content.Content;
+        
+        _context.Answers.Update(answer);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return Result.Success();
+
+    }
 }

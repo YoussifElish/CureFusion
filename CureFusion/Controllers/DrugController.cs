@@ -1,11 +1,4 @@
-﻿using CureFusion.Abstactions.Consts;
-using CureFusion.Contracts.Files;
-using CureFusion.Contracts.Medicine;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using SurveyBasket.Abstactions;
-
+﻿
 namespace CureFusion.Controllers;
 
 [Route("api/[controller]")]
