@@ -35,9 +35,9 @@ namespace CureFusion.Controllers
 
 
         [HttpPost("Add")]
-        public async Task<IActionResult> AddAsync([FromQuery] CreateArticleRequest request, [FromForm] UploadImageRequest articleImage, [FromQuery] string authorId, CancellationToken cancellationToken)
+        public async Task<IActionResult> AddAsync([FromQuery] CreateArticleRequest request,[FromForm] string Content, [FromForm] UploadImageRequest articleImage, [FromQuery] string authorId, CancellationToken cancellationToken)
         {
-            var result = await _articleService.CreateArticleAsync(request, articleImage, authorId, cancellationToken);
+            var result = await _articleService.CreateArticleAsync(request,Content, articleImage, authorId, cancellationToken);
             Console.WriteLine($"Generated ID: {result.Value!.Id}");
             return result.IsSuccess
                 ? Created($"/Article/{result.Value!.Id}", result.Value)
@@ -45,10 +45,10 @@ namespace CureFusion.Controllers
         }
 
     
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAsync([FromRoute] int id, [FromBody] UpdateArticleRequest request, [FromForm] UploadImageRequest? articleImage, CancellationToken cancellationToken)
+        [HttpPut("")]
+        public async Task<IActionResult> UpdateAsync([FromQuery] int id, [FromQuery] UpdateArticleRequest request, [FromForm] string Content,[FromForm] UploadImageRequest? articleImage, CancellationToken cancellationToken)
         {
-            var result = await _articleService.UpdateArticleAsync(id, request, articleImage, cancellationToken);
+            var result = await _articleService.UpdateArticleAsync(id, Content, request, articleImage, cancellationToken);
             return result.IsSuccess
                 ? NoContent()
                 : result.ToProblem();

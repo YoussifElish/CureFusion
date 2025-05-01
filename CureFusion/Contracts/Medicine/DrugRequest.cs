@@ -2,7 +2,7 @@
 
 public record DrugRequest
 (
- int Dosage,
+ string Dosage,
  string Name ,
  string SideEffect,
  string Interaction 

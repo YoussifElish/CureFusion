@@ -8,8 +8,6 @@ public record CreateArticleRequest(
     [StringLength(500)]
     string Summary,
 
-    [Required]
-    string Content,
 
     [Required]
 

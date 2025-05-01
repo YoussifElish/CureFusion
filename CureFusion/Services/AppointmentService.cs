@@ -1,5 +1,7 @@
 ﻿using CureFusion.Abstactions;
 using CureFusion.Contracts.Appointment;
+using CureFusion.Contracts.Doctor;
+using CureFusion.Entities;
 using CureFusion.Enums;
 using CureFusion.Errors;
 using Mapster;
@@ -12,6 +14,7 @@ public class AppointmentService(ApplicationDbContext dbContext, IHttpContextAcce
     private readonly ApplicationDbContext _dbContext = dbContext;
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
     private readonly PaymobService _paymobService = paymobService;
+    private readonly string _filesPath = $"https://curefusion2.runasp.net/Uploads";
 
     public async Task<Result<IEnumerable<AppointmentResponse>>> GetAllAppointments(CancellationToken cancellationToken = default)
     {
@@ -25,9 +28,55 @@ public class AppointmentService(ApplicationDbContext dbContext, IHttpContextAcce
 
     }
 
+    public async Task<Result<IEnumerable<DoctorAppoitmentsResponse>>> GetAllDoctorsWithAppoitments(CancellationToken cancellationToken = default)
+    {
+        var doctorsWithAppointments = await _dbContext.Appointments
+            .Include(x => x.Doctor).
+            ThenInclude(x=>x.User)
+            .Where(x => x.Doctor != null)
+            .Select(x => x.Doctor)
+            .Distinct()
+            .ToListAsync();
+        
+
+        foreach (var item in doctorsWithAppointments)
+        {
+            item.ProfileImage = await _dbContext.UploadedFiles
+                .FirstOrDefaultAsync(x => x.Id == item.ProfileImageId, cancellationToken);
+        }
+        var response = doctorsWithAppointments.Select(appoitment => new DoctorAppoitmentsResponse
+        {
+            Id = appoitment.Id,
+            UserId = appoitment.UserId,
+            Specialization = appoitment.Specialization,
+            Bio = appoitment.Bio,
+            YearsOfExperience = appoitment.YearsOfExperience,
+            Rating = appoitment.Rating,
+            TotalReviews = appoitment.TotalReviews,
+            ProfileImagePath = $"{_filesPath}/{appoitment.ProfileImage.StoredFileName}",
+            doctorName = appoitment.User.FirstName + " " + appoitment.User.LastName
+
+        });
+
+        return Result.Success(response);
+
+
+    }
+
     public async Task<Result<IEnumerable<AppointmentResponse>>> GetActiveAppointments(CancellationToken cancellationToken = default)
     {
         var appointments = await _dbContext.Appointments.Where(Appointment => Appointment.Status != Enums.AppointmentStatus.Canceled)
+       .AsNoTracking()
+       .ToListAsync(cancellationToken);
+        var appointmentResponses = appointments.Adapt<IEnumerable<AppointmentResponse>>();
+
+        return Result.Success(appointmentResponses);
+
+    }
+
+    public async Task<Result<IEnumerable<AppointmentResponse>>> GetActiveAppointmentsByDoctorId(int id , CancellationToken cancellationToken = default)
+    {
+        var appointments = await _dbContext.Appointments.Where(Appointment => Appointment.DoctorId == id &&Appointment.Status != Enums.AppointmentStatus.Canceled)
        .AsNoTracking()
        .ToListAsync(cancellationToken);
         var appointmentResponses = appointments.Adapt<IEnumerable<AppointmentResponse>>();
@@ -66,7 +115,9 @@ public class AppointmentService(ApplicationDbContext dbContext, IHttpContextAcce
     public async Task<Result<PatientAppointmentResponse>> BookAppointment(PatientAppointmentRequest request, CancellationToken cancellationToken = default)
     {
 
-        var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        //var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userId = "419c725a-7792-4b1f-b9cd-5a9896b98bd2";
+
 
         var appointment = await _dbContext.Appointments
             .FirstOrDefaultAsync(x => x.Id == request.AppointmentId, cancellationToken);

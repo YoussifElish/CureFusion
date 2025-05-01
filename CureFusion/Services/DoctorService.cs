@@ -74,8 +74,8 @@ public class DoctorService(ApplicationDbContext context , IHttpContextAccessor h
 
     public async Task<Result> DoctorAvaliability(DoctorAvailabilityRequest request,  CancellationToken cancellationToken = default)
     {
-        var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
+        //var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userId = "419c725a-7792-4b1f-b9cd-5a9896b98bd2"; 
         var isUserDoctor = await _context.Doctors.Where(d => d.UserId == userId).SingleOrDefaultAsync(cancellationToken);
         if (isUserDoctor is null)
         {

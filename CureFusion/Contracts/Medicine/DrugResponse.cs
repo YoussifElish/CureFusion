@@ -3,8 +3,9 @@
 public record DrugResponse
 (
  int Id,
- int Dosage,
+ string Dosage,
  string Name,
  string SideEffect,
- string Interaction
+ string Interaction,
+ string? DrugImage
 );
