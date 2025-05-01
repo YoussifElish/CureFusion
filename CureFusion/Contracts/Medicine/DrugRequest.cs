@@ -5,5 +5,6 @@ public record DrugRequest
  string Dosage,
  string Name ,
  string SideEffect,
- string Interaction 
+ string Interaction,
+ string Description
 );

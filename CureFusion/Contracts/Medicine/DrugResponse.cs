@@ -7,5 +7,6 @@ public record DrugResponse
  string Name,
  string SideEffect,
  string Interaction,
+ string Description,
  string? DrugImage
 );

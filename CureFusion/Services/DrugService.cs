@@ -77,6 +77,7 @@ public class DrugService(ApplicationDbContext Context, IFileService fileService)
         drug.Dosage,
         drug.Interaction,
         drug.SideEffect,
+        drug.Description,
         drug.DrugImage != null ? $"{_filesPath}/{drug.DrugImage.StoredFileName}" : null
     ));
 
@@ -103,6 +104,7 @@ public class DrugService(ApplicationDbContext Context, IFileService fileService)
         UpdatedDrug.Dosage = request.Dosage;
         UpdatedDrug.Interaction = request.Interaction;
         UpdatedDrug.SideEffect = request.SideEffect;
+        UpdatedDrug.Description = request.Description;
         await _context.SaveChangesAsync(cancellationToken);
         return Result.Success();
 
