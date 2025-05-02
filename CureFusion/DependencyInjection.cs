@@ -44,10 +44,14 @@ public static class DependencyInjection
         services.AddScoped<IDoctorService, DoctorService>();
         services.AddScoped<IEmailSender, EmailService>();
         services.AddScoped<IArticleService, ArticleService>();
+        services.AddScoped<IProfileService, ProfileService>();
         services.AddScoped<IFileService, FileService>();
         services.AddScoped<ISessionService, SessionService>();
         services.AddScoped<ISubscriptionService, SubscriptionService>();
-
+        services.AddOptions<TwilioSettings>()
+            .BindConfiguration("TwilioSettings")
+            .ValidateDataAnnotations()
+           .ValidateOnStart();
 
         services.Configure<MailSettings>(config.GetSection(nameof(MailSettings)));
         return services;

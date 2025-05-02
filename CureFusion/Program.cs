@@ -23,6 +23,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.Configure<WhatsAppConfigurations>(
     builder.Configuration.GetSection("WhatsAppConfigurations"));
+builder.Services.Configure<WhatsAppConfigurations>(
+    builder.Configuration.GetSection("TwilioSettings"));
 
 builder.Services.AddCors(options =>
 {
@@ -68,9 +70,9 @@ app.UseHangfireDashboard("/jobs", new DashboardOptions
     }
 });
 app.UseCors("AllowMultipleOrigins");
+app.UseMiddleware<SessionValidationMiddleware>();
 app.UseAuthorization();
 app.UseStaticFiles();
-app.UseMiddleware<SessionValidationMiddleware>();
 app.MapControllers();
 
 app.Run();

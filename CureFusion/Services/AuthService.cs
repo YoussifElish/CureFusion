@@ -55,6 +55,7 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
                 ExpiresOn = refreshTokenExpiration,
             });
 
+            var expiryMinutes = user.SessionExpiryMinutes ?? 1440;
 
             var session = new UserSession
             {
@@ -64,7 +65,7 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
                 UserAgent = _httpContextAccessor.HttpContext?.Request.Headers["User-Agent"],
                 LastActivity = DateTime.UtcNow,
                 IsActive = true,
-                ExpiryAt = DateTime.UtcNow.AddMinutes(1)
+                ExpiryAt = DateTime.UtcNow.AddMinutes(expiryMinutes)
             };
             await _userManager.UpdateAsync(user);
             await _context.UserSessions.AddAsync(session);

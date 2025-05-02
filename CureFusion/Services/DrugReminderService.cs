@@ -34,7 +34,7 @@ public class DrugReminderService : IDrugReminderService
         {
             _logger.LogInformation($"Scheduling reminder for drug {reminder.Drug.Name} at {nextReminderTime}");
 
-            _backgroundJobClient.Schedule(() => SendReminderNotification(reminder), nextReminderTime);
+            _backgroundJobClient.Schedule(() => SendReminderNotification(reminder.Id), nextReminderTime);
 
             reminder.LastReminderTime = nextReminderTime;
 
@@ -47,8 +47,12 @@ public class DrugReminderService : IDrugReminderService
         }
     }
 
-    public async Task SendReminderNotification(DrugReminder reminder)
+    public async Task SendReminderNotification(int reminderId)
     {
+
+        var reminder = await _context.DrugReminders
+            .Include(r => r.Drug)
+            .FirstOrDefaultAsync(r => r.Id == reminderId);
 
         var user = await _userManager.FindByIdAsync(reminder.UserId);
 
@@ -59,15 +63,15 @@ public class DrugReminderService : IDrugReminderService
         }
         _logger.LogInformation($"Sending reminder notification for drug {reminder.Drug.Name}");
 
-        //      var result = await _twilioVoiceService.MakeVoiceCallAsync(
-        //    toPhoneNumber: "+201093441321",
-        //    message: $"مرحبًا {user.FirstName}، نحن من فريق الدعم في موقع CureFusion. نود تذكيرك بأخذ الدواء الذي وصفه لك الطبيب، وهو {reminder.Drug.Name}. نرجو منك الالتزام بالجرعة المحددة في الوقت المحدد. مع تحياتنا، فريق CureFusion.",
-        //    language: "ar-AE",
-        //    voice: "Polly.Hala-Neural"
-        //);
+        var result = await _twilioVoiceService.MakeVoiceCallAsync(
+      toPhoneNumber: "+201093441321",
+      message: $"مرحبًا {user.FirstName}، نحن من فريق الدعم في موقع CureFusion. نود تذكيرك بأخذ الدواء الذي وصفه لك الطبيب، وهو {reminder.Drug.Name}. نرجو منك الالتزام بالجرعة المحددة في الوقت المحدد. مع تحياتنا، فريق CureFusion.",
+      language: "ar-AE",
+      voice: "Polly.Hala-Neural"
+  );
 
 
 
-        //      _logger.LogInformation($"Reminder sent for {reminder.Drug.Name} at {DateTime.Now} account sid : {result.AccountSid} Ended At {result.EndTime} Duration : {result.Duration} QueueTime : {result.QueueTime}  URI : {result.Uri}");
+        _logger.LogInformation($"Reminder sent for {reminder.Drug.Name} at {DateTime.Now} account sid : {result.AccountSid} Ended At {result.EndTime} Duration : {result.Duration} QueueTime : {result.QueueTime}  URI : {result.Uri}");
     }
 }
