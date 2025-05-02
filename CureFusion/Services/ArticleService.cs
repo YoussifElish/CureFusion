@@ -11,15 +11,16 @@ using RealState.Services;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using System.Linq.Dynamic.Core;
+using static System.Net.WebRequestMethods;
 namespace CureFusion.Services;
 
 public class ArticleService(ApplicationDbContext context, IFileService fileService, IWebHostEnvironment webHostEnvironment) : IArticleService
 {
     private readonly ApplicationDbContext _context = context;
     private readonly IFileService _fileService = fileService;
-    private readonly string _filesPath = $"{webHostEnvironment.WebRootPath}/uploads";
+    private readonly string _filesPath = $"https://curefusion2.runasp.net/Uploads";
 
-    public async Task<Result<ArticleResponse>> CreateArticleAsync(CreateArticleRequest request, UploadImageRequest? articleImage, string authorId, CancellationToken cancellationToken)
+    public async Task<Result<ArticleResponse>> CreateArticleAsync(CreateArticleRequest request, string Content, UploadImageRequest? articleImage, string authorId, CancellationToken cancellationToken)
     {
     
 
@@ -35,7 +36,7 @@ public class ArticleService(ApplicationDbContext context, IFileService fileServi
         {
             Title = request.Title,
             Summary = request.Summary,
-            Content = request.Content,
+            Content = Content,
             Category = request.Category,
             Tags = request.Tags ?? string.Empty,
             Status = ArticleStatus.Published, 
@@ -145,6 +146,7 @@ public class ArticleService(ApplicationDbContext context, IFileService fileServi
             article.PublishedDate,
             article.ViewCount,
             article.Author != null ? $"{article.Author.FirstName} {article.Author.LastName}" : "Unknown",
+           article.Author != null ? $"{article.Author.Id}" : "Unknown",
             article.HealthArticleImage != null ? $"{_filesPath}/{article.HealthArticleImage.StoredFileName}" : null 
         )).ToList();
 
@@ -176,6 +178,7 @@ public class ArticleService(ApplicationDbContext context, IFileService fileServi
              article.PublishedDate,
              article.ViewCount,
              article.Author?.UserName ?? "Unknown",
+             article.Author != null ? $"{article.Author.Id}" : "Unknown",
              article.HealthArticleImage != null ? $"{_filesPath}/{article.HealthArticleImage.StoredFileName}" : null
          );
         await IncrementArticleViewCountAsync(response.Id, cancellationToken);
@@ -197,7 +200,7 @@ public class ArticleService(ApplicationDbContext context, IFileService fileServi
         return Result.Success();
     }
 
-    public async Task<Result> UpdateArticleAsync(int id, UpdateArticleRequest request, UploadImageRequest? articleImage, CancellationToken cancellationToken)
+    public async Task<Result> UpdateArticleAsync(int id, string content,UpdateArticleRequest request, UploadImageRequest? articleImage, CancellationToken cancellationToken)
     {
         var article = await _context.HealthArticles.FindAsync( id , cancellationToken);
         if (article is null)
@@ -207,7 +210,7 @@ public class ArticleService(ApplicationDbContext context, IFileService fileServi
 
         article.Title = request.Title;
         article.Summary = request.Summary;
-        article.Content = request.Content;
+        article.Content = content;
         article.Category = request.Category;
         article.Tags = request.Tags ?? string.Empty;
 

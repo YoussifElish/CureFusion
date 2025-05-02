@@ -11,5 +11,6 @@ public record ArticleResponse(
     DateTime PublishedDate,
     int ViewCount,
     string AuthorName, 
+    string authorId, 
     string? ImageUrl
 );

@@ -1,4 +1,13 @@
-﻿
+using CureFusion.Abstactions.Consts;
+using CureFusion.Contracts.Articles;
+using CureFusion.Contracts.Files;
+using CureFusion.Contracts.Medicine;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using SurveyBasket.Abstactions;
+
+
 namespace CureFusion.Controllers;
 
 [Route("api/[controller]")]
@@ -10,9 +19,9 @@ public class DrugController(IDrugService drug) : ControllerBase
         private readonly IDrugService _drug = drug;
 
         [HttpGet("GetALl")]
-        public async Task<IActionResult> GetAllasync(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetAllasync([FromQuery] DrugQueryParameters drugQueryParameters ,CancellationToken cancellationToken)
         {
-            var Result = await _drug.GetAllDrugAsync(cancellationToken);
+            var Result = await _drug.GetAllDrugsAsync(drugQueryParameters, cancellationToken);
             return Result.IsSuccess ? Ok(Result.Value) : Result.ToProblem();
           
         }

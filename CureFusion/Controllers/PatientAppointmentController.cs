@@ -12,14 +12,27 @@ namespace CureFusion.Controllers
     {
         private readonly IAppointmentService _appointmentService = appointmentService;
 
-        [Authorize]
+        //[Authorize]
         [HttpGet("GetActiveAppointments")]
         public async Task<IActionResult> GetActiveAppointments(CancellationToken cancellationToken)
         {
             var result = await _appointmentService.GetActiveAppointments(cancellationToken);
             return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+        }  
+        
+        [HttpGet("GetActiveAppointmentsByDoctorId")]
+        public async Task<IActionResult> GetActiveAppointmentsByDoctorId([FromQuery]int id ,CancellationToken cancellationToken)
+        {
+            var result = await _appointmentService.GetActiveAppointmentsByDoctorId(id,cancellationToken);
+            return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+        } 
+        [HttpGet("GetDoctorsWithAppoitments")]
+        public async Task<IActionResult> GetDoctorsWithAppoitments(CancellationToken cancellationToken)
+        {
+            var result = await _appointmentService.GetAllDoctorsWithAppoitments(cancellationToken);
+            return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
         }
-        [Authorize]
+        //[Authorize]
         [HttpPost("Book")]
         public async Task<IActionResult> BookAppointment([FromBody] PatientAppointmentRequest request, CancellationToken cancellationToken)
         {

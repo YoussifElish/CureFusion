@@ -10,5 +10,14 @@ public class DrugRequestValidator : AbstractValidator<DrugRequest>
 
         RuleFor(drug=>drug.Interaction)
             .MaximumLength(100);
+        RuleFor(drug => drug.SideEffect)
+            .MaximumLength(100);
+        RuleFor(drug => drug.Dosage)
+            .NotEmpty()
+            .MaximumLength(100);
+        RuleFor(drug => drug.Description)
+            .NotEmpty()
+            .MaximumLength(1500);
+
     }
 }

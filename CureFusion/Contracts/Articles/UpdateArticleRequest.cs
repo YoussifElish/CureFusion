@@ -8,8 +8,7 @@ public record UpdateArticleRequest(
     [StringLength(500)]
     string Summary,
 
-    [Required]
-    string Content,
+
 
     [Required]
     ArticleCategory Category,
