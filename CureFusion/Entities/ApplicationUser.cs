@@ -15,5 +15,7 @@ public class ApplicationUser : IdentityUser
 
     public string? EmailConfirmationCode { get; set; }
     public DateTime? EmailConfirmationCodeExpiration { get; set; }
+    public ICollection<Question> Questions { get; set; }
+    public ICollection<Answer> Answers { get; set; }
 
 }

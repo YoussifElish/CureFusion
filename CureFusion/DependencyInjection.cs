@@ -39,6 +39,8 @@ public static class DependencyInjection
 
         services.AddScoped<IDrugReminderService, DrugReminderService>();
         services.AddScoped<IDrugService, DrugService>();
+        services.AddScoped<IQuestionService, QuestionService>();
+        services.AddScoped<IAnswerService, AnswerService>();
         services.AddScoped<IDoctorService, DoctorService>();
         services.AddScoped<IEmailSender, EmailService>();
         services.AddScoped<IArticleService, ArticleService>();
