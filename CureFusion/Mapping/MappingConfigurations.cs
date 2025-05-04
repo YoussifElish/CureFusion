@@ -2,12 +2,15 @@
 using CureFusion.Contracts.Appointment;
 using CureFusion.Contracts.Question;
 using Mapster;
+using RealState.Services;
 
 
 namespace SurveyBasket.Mapping
 {
-    public class MappingConfigurations : IRegister
+    public class MappingConfigurations() : IRegister
     {
+        private readonly string _filesPath = $"https://curefusion2.runasp.net/Uploads";
+
         public void Register(TypeAdapterConfig config)
         {
             config.NewConfig<CureFusion.Contracts.Auth.RegisterRequest, ApplicationUser>().Map(dest => dest.UserName, src => src.Email).Map(dest => dest.EmailConfirmed, src => true);
@@ -25,6 +28,13 @@ namespace SurveyBasket.Mapping
 
         TypeAdapterConfig<Answer, AnswerResponse>.NewConfig()
             .Map(dest => dest.UserName, src => src.User.FirstName + " " + src.User.LastName); // For concatenating user name
+
+
+
+            TypeAdapterConfig<Drug, DrugResponse>.NewConfig()
+    .Map(dest => dest.DrugImage, 
+         src => src.DrugImageId != null ? $"{_filesPath}/{src.DrugImage.StoredFileName}" : null);
+
 
 
         }

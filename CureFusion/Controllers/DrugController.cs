@@ -35,7 +35,7 @@ public class DrugController(IDrugService drug) : ControllerBase
             : Result.ToProblem();
     
     }
-    [Authorize(Roles =DefaultRoles.AdminRoleId+","+ DefaultRoles.DoctorRoleId)]
+    //[Authorize(Roles = $"{DefaultRoles.Admin},{DefaultRoles.Doctor}")]
     [HttpPost("Add")]
     public async Task<IActionResult> AddAsync([FromForm] DrugRequest Request, [FromForm] UploadImageRequest drugImage, CancellationToken cancellationToken)
     {
@@ -45,7 +45,7 @@ public class DrugController(IDrugService drug) : ControllerBase
             : Result.ToProblem();
 
     }
-    [Authorize(Roles =DefaultRoles.AdminRoleId+","+ DefaultRoles.DoctorRoleId)]
+    [Authorize(Roles = $"{DefaultRoles.Admin},{DefaultRoles.Doctor}")]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateAsync([FromRoute] int id,[FromBody] DrugRequest Request, CancellationToken cancellationToken)
     {
@@ -56,7 +56,7 @@ public class DrugController(IDrugService drug) : ControllerBase
         //i will check it again 
 
     }
-    [Authorize(Roles =DefaultRoles.AdminRoleId+","+ DefaultRoles.DoctorRoleId)]
+    [Authorize(Roles = $"{DefaultRoles.Admin},{DefaultRoles.Doctor}")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteAsync([FromRoute] int id, CancellationToken cancellationToken)
     {

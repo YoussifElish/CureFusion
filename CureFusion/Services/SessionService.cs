@@ -32,10 +32,10 @@ public class SessionService(ApplicationDbContext context, IHttpContextAccessor h
         return Result.Success(sessions);
     }
 
-    public async Task<Result> TerminateSessionAsync(string sessionToken, CancellationToken cancellationToken)
+    public async Task<Result> TerminateSessionAsync(int sessionId, CancellationToken cancellationToken)
     {
         var session = await _context.UserSessions
-            .FirstOrDefaultAsync(s => s.SessionToken == sessionToken, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Id == sessionId, cancellationToken);
 
         if (session == null)
             return Result.Failure(AuthErrors.InvalidSession);

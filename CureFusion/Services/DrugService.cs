@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using CureFusion.Contracts.Files;
 using RealState.Services;
 using CureFusion.Contracts.Articles;
+using CureFusion.Helpers;
 
 namespace CureFusion.Services;
 
@@ -25,6 +26,7 @@ public class DrugService(ApplicationDbContext Context, IFileService fileService)
         var image = await _fileService.UploadImagesAsync(drugImage.Image, cancellationToken);
         var drug = request.Adapt<Drug>();
         drug.DrugImageId = image.Id;
+        drug.DrugImage = image;
         await _context.AddAsync(drug, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
 
@@ -37,58 +39,59 @@ public class DrugService(ApplicationDbContext Context, IFileService fileService)
         var isexsist = await _context.Drugs.FindAsync(id);
         if (isexsist is null)
             return Result.Failure(DrugError.DrugNotFOund);
+        var drugImage = await _context.UploadedFiles.FindAsync(isexsist.DrugImageId);
+        var drugRemider = await _context.DrugReminders.Where(x => x.DrugId == id).ToListAsync();
+        if (drugRemider is not null)
+            _context.RemoveRange(drugRemider);
         _context.Remove(isexsist);
+        _context.Remove(drugImage);
+
         await _context.SaveChangesAsync(cancellationToken);
 
         return Result.Success();
     }
 
 
-    public async Task<Result<IEnumerable<DrugResponse>>> GetAllDrugsAsync(DrugQueryParameters queryParams, CancellationToken cancellationToken)
+    public async Task<Result<PaginatedResult<DrugResponse>>> GetAllDrugsAsync(DrugQueryParameters queryParams, CancellationToken cancellationToken)
     {
-        // إنشاء الاستعلام الأساسي
-        var query = _context.Drugs.AsNoTracking();
+        var query = _context.Drugs.Include(x=>x.DrugImage).AsNoTracking();
 
-        // Filtering
         if (!string.IsNullOrWhiteSpace(queryParams.SearchTerm))
         {
-            query = query.Where(d => d.Name.ToLower().Contains(queryParams.SearchTerm.ToLower()) ||
-                                     d.Dosage.ToLower().Contains(queryParams.SearchTerm.ToLower()) ||
-                                     d.SideEffect.ToLower().Contains(queryParams.SearchTerm.ToLower()));
+            var term = queryParams.SearchTerm.ToLower();
+            query = query.Where(d =>
+                d.Name.ToLower().Contains(term) ||
+                d.Dosage.ToLower().Contains(term) ||
+                d.SideEffect.ToLower().Contains(term));
         }
 
+        query = query.OrderBy(x => x.Name);
 
-        // Sorting
-          
-
-                query = query.OrderBy(x=>x.Name);
-
-        // Pagination
         var totalItems = await query.CountAsync(cancellationToken);
+
         var drugs = await query
             .Skip((queryParams.PageNumber - 1) * queryParams.PageSize)
             .Take(queryParams.PageSize)
             .ToListAsync(cancellationToken);
 
-        // تحويل الأدوية إلى DTOs
-        var response = drugs.Select(drug => new DrugResponse(
-        drug.Id,
-        drug.Name,
-        drug.Dosage,
-        drug.Interaction,
-        drug.SideEffect,
-        drug.Description,
-        drug.DrugImage != null ? $"{_filesPath}/{drug.DrugImage.StoredFileName}" : null
-    ));
+     var response = drugs.Adapt<List<DrugResponse>>();
 
-        // إرجاع النتيجة
-        return Result.Success(response);
+
+        var paginatedResult = new PaginatedResult<DrugResponse>(
+            response,
+            totalItems,
+            queryParams.PageNumber,
+            queryParams.PageSize
+        );
+
+        return Result.Success(paginatedResult);
     }
 
     public async Task<Result<DrugResponse>> GetDrugAsync(int id, CancellationToken cancellationToken)
     {
-        var drug = await _context.Drugs.FindAsync(id, cancellationToken);
-        return drug is not null ? Result.Success(drug.Adapt<DrugResponse>()) : Result.Failure<DrugResponse>(DrugError.DrugNotFOund);
+        var drug = await _context.Drugs.Include(x=>x.DrugImage).Where(x=>x.Id == id).FirstOrDefaultAsync();
+        var response = drug.Adapt<DrugResponse>();
+        return response is not null ? Result.Success(response) : Result.Failure<DrugResponse>(DrugError.DrugNotFOund);
     }
 
     public async Task<Result> UpdateDrugAsync(int id, DrugRequest request, CancellationToken cancellationToken)

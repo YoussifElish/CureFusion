@@ -76,7 +76,7 @@ public class AppointmentService(ApplicationDbContext dbContext, IHttpContextAcce
 
     public async Task<Result<IEnumerable<AppointmentResponse>>> GetActiveAppointmentsByDoctorId(int id , CancellationToken cancellationToken = default)
     {
-        var appointments = await _dbContext.Appointments.Where(Appointment => Appointment.DoctorId == id &&Appointment.Status != Enums.AppointmentStatus.Canceled)
+        var appointments = await _dbContext.Appointments.Where(Appointment => Appointment.DoctorId == id &&Appointment.Status == Enums.AppointmentStatus.NotReversed && Appointment.AppointmentDate >= DateTime.Today)
        .AsNoTracking()
        .ToListAsync(cancellationToken);
         var appointmentResponses = appointments.Adapt<IEnumerable<AppointmentResponse>>();

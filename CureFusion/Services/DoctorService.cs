@@ -18,15 +18,15 @@ public class DoctorService(ApplicationDbContext context , IHttpContextAccessor h
 
     public async Task<Result> RegisterAsDoctor(DoctorRegisterRequest request, RegisterDoctorImageRequest imageRequest, CancellationToken cancellationToken = default)
     {
-       // var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString()?.Replace("Bearer ", string.Empty);
-       //var session = await _sessionService.IsSessionValidAsync(token, cancellationToken);
-       // if (!session)
-       // {
-       //     return Result.Failure(AuthErrors.InvalidSession);
-       // }
+        // var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString()?.Replace("Bearer ", string.Empty);
+        //var session = await _sessionService.IsSessionValidAsync(token, cancellationToken);
+        // if (!session)
+        // {
+        //     return Result.Failure(AuthErrors.InvalidSession);
+        // }
 
-        var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var isRegisteredBefore = await _context.Doctors.Where(d=>d.UserId == userId).SingleOrDefaultAsync();
+        var user = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var isRegisteredBefore = await _context.Doctors.Where(d=>d.UserId == user).SingleOrDefaultAsync();
         
         if (isRegisteredBefore is not null)
         {
@@ -60,10 +60,10 @@ public class DoctorService(ApplicationDbContext context , IHttpContextAccessor h
             }
         }
 
-       
 
-            var newDoctor = request.Adapt<Doctor>();
-            newDoctor.UserId = userId; // TODO : I will remove it later when i add iaccessor to get current user id 
+
+        var newDoctor = request.Adapt<Doctor>();
+            newDoctor.UserId = user; // TODO : I will remove it later when i add iaccessor to get current user id 
             _context.Doctors.Add(newDoctor);
             await _context.SaveChangesAsync(cancellationToken);
 
@@ -74,8 +74,7 @@ public class DoctorService(ApplicationDbContext context , IHttpContextAccessor h
 
     public async Task<Result> DoctorAvaliability(DoctorAvailabilityRequest request,  CancellationToken cancellationToken = default)
     {
-        //var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var userId = "419c725a-7792-4b1f-b9cd-5a9896b98bd2"; 
+        var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var isUserDoctor = await _context.Doctors.Where(d => d.UserId == userId).SingleOrDefaultAsync(cancellationToken);
         if (isUserDoctor is null)
         {
@@ -85,7 +84,7 @@ public class DoctorService(ApplicationDbContext context , IHttpContextAccessor h
         var isSessionDuplicated = await _context.DoctorAvailabilities
      .AnyAsync(x => x.DoctorId == isUserDoctor.Id &&
                     (
-                        (x.From < request.To && x.To > request.From)  
+                        (x.From < request.To && x.To > request.From && x.Date == request.Date && x.IsActive)  
                     ), cancellationToken);
 
 
@@ -113,6 +112,8 @@ public class DoctorService(ApplicationDbContext context , IHttpContextAccessor h
                 DurationInMinutes = request.SlotDurationInMinutes, 
                 AppointmentType = request.SessionMode,
                 DoctorAvailabilityId = doctorAvailability.Id,
+                doctorAvailability = doctorAvailability,
+                Doctor = isUserDoctor,
                 PricePerSlot = request.PricePerSlot
             };
             appointments.Add(appointment);
@@ -123,37 +124,137 @@ public class DoctorService(ApplicationDbContext context , IHttpContextAccessor h
         return Result.Success();
     }
 
-    public async Task<Result> DeleteDoctorAvaliability(int Id,  CancellationToken cancellationToken = default)
+    public async Task<Result<List<DoctorAvailability>>> GetDoctorAvailabilities(CancellationToken cancellationToken = default)
     {
         var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        var isSessionExist = await _context.DoctorAvailabilities.Where(x => x.Id == Id).SingleOrDefaultAsync(cancellationToken);
-        if (isSessionExist is null)
+        var doctor = await _context.Doctors
+            .Where(d => d.UserId == userId)
+            .SingleOrDefaultAsync(cancellationToken);
+
+        if (doctor == null)
+            return Result.Failure<List<DoctorAvailability>>(DoctorErrors.NotDoctor);
+
+        var availabilities = await _context.DoctorAvailabilities
+        .Where(a => a.DoctorId == doctor.Id
+         && a.Date >= DateTime.Today
+         && a.To > DateTime.Now.TimeOfDay && a.IsActive)
+            .OrderByDescending(a => a.Date)
+            .ToListAsync(cancellationToken);
+
+        var result = availabilities.Adapt<List<DoctorAvailability>>();
+
+        return Result.Success(result);
+    }
+
+    public async Task<Result<List<Appointment>>> GetDoctorAppointments(CancellationToken cancellationToken = default)
+    {
+        var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var doctor = await _context.Doctors
+            .Where(d => d.UserId == userId)
+            .SingleOrDefaultAsync(cancellationToken);
+
+        if (doctor == null)
+            return Result.Failure<List<Appointment>>(DoctorErrors.NotDoctor);
+        var appointments = await _context.Appointments.Include(x=>x.doctorAvailability)
+            .Where(a => a.DoctorId == doctor.Id && a.AppointmentDate >= DateTime.UtcNow.Date && a.doctorAvailability.IsActive)
+            .OrderByDescending(a => a.AppointmentDate)
+            .ToListAsync(cancellationToken);
+        var result = appointments.Adapt<List<Appointment>>();
+        return Result.Success(result);
+    }
+    public async Task<Result> DeleteDoctorAvaliability(int id, CancellationToken cancellationToken = default)
+    {
+        var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Result.Failure(AuthErrors.NotFound);
+        }
+
+        var doctorAvailability = await _context.DoctorAvailabilities
+            .SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+        if (doctorAvailability is null)
         {
             return Result.Failure(DoctorErrors.NotFound);
         }
-        if (!isSessionExist.IsActive)
+
+        if (!doctorAvailability.IsActive)
         {
             return Result.Failure(DoctorErrors.AlreadyDeleted);
         }
 
-        if (isSessionExist.DoctorId != _context.Doctors.Where(d => d.UserId == userId).Select(d => d.Id).SingleOrDefault())
+        var doctorId = await _context.Doctors
+            .Where(d => d.UserId == userId)
+            .Select(d => (int?)d.Id)
+            .SingleOrDefaultAsync(cancellationToken);
+
+        if (doctorId is null)
+        {
+            return Result.Failure(DoctorErrors.NotDoctor);
+        }
+
+        if (doctorAvailability.DoctorId != doctorId)
         {
             return Result.Failure(DoctorErrors.NotYourSession);
         }
 
         var appointmentsToDelete = await _context.Appointments
-       .Where(a => a.DoctorAvailabilityId == Id)
-       .ToListAsync(cancellationToken);
+            .Where(a => a.DoctorAvailabilityId == id)
+            .ToListAsync(cancellationToken);
 
         if (appointmentsToDelete.Any())
         {
+            var appointmentIds = appointmentsToDelete.Select(a => a.Id).ToList();
+
+            var patientAppointments = await _context.patientAppointments
+                .Where(p => appointmentIds.Contains(p.AppointmentId))
+                .ToListAsync(cancellationToken);
+
+            if (patientAppointments.Any())
+            {
+                _context.patientAppointments.RemoveRange(patientAppointments);
+            }
+
             _context.Appointments.RemoveRange(appointmentsToDelete);
+
         }
 
-        isSessionExist.IsActive = false;
-        await _context.SaveChangesAsync(cancellationToken);
+        doctorAvailability.IsActive = false;
 
+        try
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+            return Result.Success();
+        }
+        catch (Exception)
+        {
+            // يمكن إضافة تسجيل للخطأ هنا إذا لزم الأمر
+            return Result.Failure(DoctorErrors.Duplicated);
+        }
+    }
+
+
+    public async Task<Result> DeleteDoctorAppointment(int Id, CancellationToken cancellationToken = default)
+    {
+        var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        var isSessionExist = await _context.Appointments.Where(x => x.Id == Id).FirstOrDefaultAsync(cancellationToken);
+        if (isSessionExist is null)
+        {
+            return Result.Failure(DoctorErrors.NotFound);
+        }
+        if (isSessionExist.Status == AppointmentStatus.Completed)
+        {
+            return Result.Failure(DoctorErrors.SessionEnded);
+        }
+        var patientAppointments = await _context.patientAppointments
+            .Where(p => p.Id == Id).ToListAsync();
+
+        _context.RemoveRange(patientAppointments);
+        _context.RemoveRange(isSessionExist);
+        await _context.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
+
 }

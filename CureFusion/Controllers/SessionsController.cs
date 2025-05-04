@@ -19,9 +19,9 @@ namespace CureFusion.Controllers
         [HttpPost("terminate")]
         [Authorize]
 
-        public async Task<IActionResult> TerminateSession([FromBody] string sessionToken, CancellationToken cancellationToken)
+        public async Task<IActionResult> TerminateSession([FromQuery] int sessionId, CancellationToken cancellationToken)
         {
-            var result = await _sessionService.TerminateSessionAsync(sessionToken, cancellationToken);
+            var result = await _sessionService.TerminateSessionAsync(sessionId, cancellationToken);
             return result.IsSuccess ? Ok() : result.ToProblem();
         }
 

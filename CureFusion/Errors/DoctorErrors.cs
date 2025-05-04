@@ -12,5 +12,6 @@ public static class DoctorErrors
     public static readonly Error NotFound = new("DoctorErrors.NotFound", "Can't Find Any Session with mentioned Id", StatusCodes.Status400BadRequest);
     public static readonly Error AlreadyDeleted = new("DoctorErrors.AlreadyDeleted", "this Appoitment has been deleted before", StatusCodes.Status400BadRequest);
     public static readonly Error NotYourSession = new("DoctorErrors.AlreadyDeleted", "you must to be appoitment owner to delete it", StatusCodes.Status203NonAuthoritative);
+    public static readonly Error SessionEnded = new("DoctorErrors.SessionEnded", "can't delete ended session", StatusCodes.Status400BadRequest);
 
 }

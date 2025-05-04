@@ -24,7 +24,7 @@ namespace CureFusion.Controllers
         [Route("ChangeEmail")]
         [Authorize]
 
-        public async Task<IActionResult> ChangeEmailAsync([FromBody] string newEmail, CancellationToken cancellationToken)
+        public async Task<IActionResult> ChangeEmailAsync([FromQuery] string newEmail, CancellationToken cancellationToken)
         {
             var result = await _profileService.ChangeEmailAsync(newEmail, cancellationToken);
 

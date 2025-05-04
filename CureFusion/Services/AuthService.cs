@@ -96,11 +96,11 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
             var code = random.Next(100000, 999999).ToString();
             user.EmailConfirmationCode = code;
             user.EmailConfirmationCodeExpiration = DateTime.UtcNow.AddMinutes(10);
+            await _userManager.AddToRoleAsync(user, DefaultRoles.Member);
             _context.Update(user);
             await _context.SaveChangesAsync(cancellationToken);
             _logger.LogInformation("Confirmation Code: {Code}", code);
             await SendConfimartionEmail(user, code);
-
 
             return Result.Success();
         }
