@@ -31,7 +31,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowMultipleOrigins", builder =>
     {
         builder
-            .WithOrigins("http://localhost:4200", "https://midical2222.vercel.app", "https://midical2222.vercel.app/") 
+            .WithOrigins("http://localhost:4200", "https://midical2222.vercel.app", "https://midical2222333.vercel.app") 
             .AllowAnyMethod()
             .AllowAnyHeader();
     });
