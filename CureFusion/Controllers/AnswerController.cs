@@ -2,10 +2,11 @@
 using CureFusion.Abstactions.Consts;
 using CureFusion.Contracts.Answer;
 using CureFusion.Contracts.Common;
+using CureFusion.Entities;
 using CureFusion.Services;
 
 namespace CureFusion.Controllers;
-[Route("api/Questions/{QuestionId}/[controller]")]
+[Route("api/[controller]")]
 [Authorize]
 [ApiController]
 public class AnswerController(IAnswerService answer) : ControllerBase
@@ -23,36 +24,55 @@ public class AnswerController(IAnswerService answer) : ControllerBase
 
     [Authorize(Roles = DefaultRoles.DoctorRoleId)]
 
-    [HttpPost("")]
+    [HttpPost("Create")]
     public async Task<IActionResult> Create([FromRoute] int QuestionId, [FromBody] AnswerRequest request, CancellationToken cancellationToken)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);//fetishch the user id from the token
 
-        var answer = await _answer.AddAnswer(QuestionId, request, userId!, cancellationToken);
+        var answer = await _answer.AddAnswer(QuestionId, request, cancellationToken);
         return answer.IsSuccess
             ? Ok(answer.Value)
             : answer.ToProblem();
     }
     [Authorize(Roles = DefaultRoles.DoctorRoleId)]
 
-    [HttpPut("{id}")]
+    [HttpPut("Update/{id}")]
     public async Task<IActionResult> Update([FromRoute] int QuestionId, [FromRoute] int id, [FromBody] AnswerRequest request, CancellationToken cancellationToken)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);//fetishch the user id from the token
-        var answer = await _answer.UpdateAnswerAsync(id, QuestionId, request, userId!, cancellationToken);
+        var answer = await _answer.UpdateAnswerAsync(id, QuestionId, request , cancellationToken);
         return answer.IsSuccess
             ? NoContent()
             : answer.ToProblem();
     }
 
     [Authorize(Roles = DefaultRoles.DoctorRoleId)]
-    [HttpDelete("{id}")]
+    [HttpDelete("Delete/{id}")]
     public async Task<IActionResult> Delete([FromRoute] int QuestionId, [FromRoute] int Id, CancellationToken cancellationToken)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);//fetishch the user id from the token
-        var delete = await _answer.DeleteAnswerAsync(Id, QuestionId, userId!, cancellationToken);
+        var delete = await _answer.DeleteAnswerAsync(Id, QuestionId,  cancellationToken);
         return delete.IsSuccess
             ? NoContent()
             : delete.ToProblem();
+    }
+
+
+    [HttpPost("UpVote/{AnswerId}")]
+    public async Task<IActionResult> UpVote([FromRoute] int AnswerId, [FromBody] AnswerRequest request, CancellationToken cancellationToken)
+    {
+
+        var answer = await _answer.UpvoteAnswerAsync(AnswerId, cancellationToken);
+        return answer.IsSuccess
+            ? Ok()
+            : answer.ToProblem();
+    }
+
+
+    [HttpPost("DownVote/{AnswerId}")]
+    public async Task<IActionResult> DownVote([FromRoute] int AnswerId, [FromBody] AnswerRequest request, CancellationToken cancellationToken)
+    {
+
+        var answer = await _answer.DownvoteDAnswerAsync(AnswerId, cancellationToken);
+        return answer.IsSuccess
+            ? Ok()  
+            : answer.ToProblem();
     }
 }

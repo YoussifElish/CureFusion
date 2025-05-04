@@ -1,5 +1,6 @@
 ﻿using CureFusion.Contracts.Common;
 using CureFusion.Contracts.Question;
+using CureFusion.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +25,7 @@ public class QuestionController(IQuestionService question) : ControllerBase
             :result.ToProblem();
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("GetAsync/{id}")]
     public async Task<IActionResult> GetAsync([FromRoute] int id, CancellationToken cancellationToken)
     {
         var result = await _question.GetQuestion(id, cancellationToken);
@@ -33,19 +34,19 @@ public class QuestionController(IQuestionService question) : ControllerBase
             : result.ToProblem();
     }
 
-    [HttpPost("")]
+    [HttpPost("CreateAsync")]
     public async Task<IActionResult> CreateAsync([FromBody ] QuestionRequest request, CancellationToken cancellationToken)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);//fetishch the user id from the token
 
 
-        var question = await _question.CreateQuestion(request, userId, cancellationToken);
+        var question = await _question.CreateQuestion(request, cancellationToken);
         return question.IsSuccess
             ? Ok(question.Value)
             : question.ToProblem();
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("UpdateAsync{id}")]
     public async Task<IActionResult> UpdateAsync([FromRoute] int id, [FromBody] QuestionRequest request, CancellationToken cancellationToken)
     {
         var result = await _question.UpdateQuestion(id, request, cancellationToken);
@@ -53,13 +54,36 @@ public class QuestionController(IQuestionService question) : ControllerBase
             ? NoContent()
             : result.ToProblem();
     }
-    [HttpDelete("{id}")]
+    [HttpDelete("DeleteAsync/{id}")]
     public async Task<IActionResult> DeleteAsync([FromRoute] int id, CancellationToken cancellationToken)
     {
         var result = await _question.DeleteQuestionAsync(id, cancellationToken);
         return result.IsSuccess
             ? NoContent()
             : result.ToProblem();
+    }
+
+    [HttpPost("UpVote/{QuestionId}")]
+    public async Task<IActionResult> UpVote([FromRoute] int QuestionId, [FromBody] AnswerRequest request, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);//fetishch the user id from the token
+
+        var answer = await _question.UpvoteQuestionAsync(QuestionId , cancellationToken);
+        return answer.IsSuccess
+            ? Ok()
+            : answer.ToProblem();
+    }
+
+
+    [HttpPost("DownVote/{QuestionId}")]
+    public async Task<IActionResult> DownVote([FromRoute] int QuestionId, [FromBody] AnswerRequest request, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);//fetishch the user id from the token
+
+        var answer = await _question.DownvoteQuestionAsync(QuestionId, cancellationToken);
+        return answer.IsSuccess
+            ? Ok()
+            : answer.ToProblem();
     }
 }
 

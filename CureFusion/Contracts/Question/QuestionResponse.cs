@@ -11,6 +11,8 @@ public record QuestionResponse
      int AnswerCount ,
      string UserId ,
      string UserName,
-    ReactType React,
+     int Upvotes,
+     int Downvotes,
+     string? RepliedByDoctorId,
     IEnumerable<AnswerResponse> Answers
 );

@@ -10,5 +10,6 @@ public record AnswerResponse
      DateTime CreatedIn,
      string UserId,
      string UserName,
-    ReactType React
+    int Upvotes,
+    int Downvotes
  );
