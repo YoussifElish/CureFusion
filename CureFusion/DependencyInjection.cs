@@ -47,6 +47,7 @@ public static class DependencyInjection
         services.AddScoped<IProfileService, ProfileService>();
         services.AddScoped<IFileService, FileService>();
         services.AddScoped<ISessionService, SessionService>();
+        services.AddScoped<IAdminService, AdminService>();
         services.AddScoped<ISubscriptionService, SubscriptionService>();
         services.AddOptions<TwilioSettings>()
             .BindConfiguration("TwilioSettings")
