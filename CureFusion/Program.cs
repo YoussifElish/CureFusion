@@ -26,14 +26,15 @@ builder.Services.Configure<WhatsAppConfigurations>(
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAllOrigins",
-         builder =>
-         {
-             builder.AllowAnyOrigin()
-                 .AllowAnyMethod()
-                 .AllowAnyHeader();
-         });
+    options.AddPolicy("AllowMultipleOrigins", builder =>
+    {
+        builder
+            .WithOrigins("http://localhost:4200", "https://midical2.vercel.app", "https://midical22.vercel.app") 
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
 });
+
 
 var app = builder.Build();
 
@@ -66,9 +67,9 @@ app.UseHangfireDashboard("/jobs", new DashboardOptions
         })
     }
 });
-app.UseStaticFiles();
-app.UseCors("AllowAllOrigins");
+app.UseCors("AllowMultipleOrigins");
 app.UseAuthorization();
+app.UseStaticFiles();
 app.UseMiddleware<SessionValidationMiddleware>();
 app.MapControllers();
 

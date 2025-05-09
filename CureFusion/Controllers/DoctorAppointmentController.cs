@@ -16,7 +16,7 @@ namespace CureFusion.Controllers
         private readonly IAppointmentService _appointmentService = appointmentService;
 
 
-        [Authorize(Roles = DefaultRoles.Member)]
+        //[Authorize(Roles = DefaultRoles.Member)]
         [HttpPost("Register")]
         public async Task<IActionResult> RegisterAsDoctor([FromForm] DoctorRegisterRequest request, [FromForm] RegisterDoctorImageRequest imageRequest, CancellationToken cancellationToken = default)
         {
@@ -25,7 +25,7 @@ namespace CureFusion.Controllers
             return result.IsSuccess ? Ok() : result.ToProblem(); // TODO : Change it to Created at action after adding the get action
         }
 
-        [Authorize(Roles = DefaultRoles.Doctor)]
+        //[Authorize(Roles = DefaultRoles.Doctor)]
         [HttpPost("Appointment/AddDoctorAvaliability")]
         public async Task<IActionResult> AddDoctorAvaliability([FromBody] DoctorAvailabilityRequest request,  CancellationToken cancellationToken = default)
         {

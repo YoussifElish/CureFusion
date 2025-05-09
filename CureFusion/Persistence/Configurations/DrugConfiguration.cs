@@ -9,7 +9,8 @@ public class DrugConfiguration : IEntityTypeConfiguration<Drug>
     {
         builder.Property(x => x.Name).IsRequired().HasMaxLength(100);
         builder.Property(x => x.Dosage).IsRequired().HasMaxLength(100);
-        
+        builder.Property(x => x.Description).IsRequired().HasMaxLength(1500);
+
 
     }
 }
