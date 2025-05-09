@@ -6,6 +6,10 @@ using CureFusion.Entities;
 using Microsoft.EntityFrameworkCore;
 using CureFusion.Contracts.Files;
 using RealState.Services;
+<<<<<<< Updated upstream
+=======
+using CureFusion.Helpers;
+>>>>>>> Stashed changes
 
 namespace CureFusion.Services;
 
@@ -42,8 +46,12 @@ public class DrugService(ApplicationDbContext Context, IFileService fileService)
     }
 
 
+<<<<<<< Updated upstream
     public async Task<Result<IEnumerable<DrugResponse>>> GetAllDrugAsync(CancellationToken cancellationToken)
 
+=======
+    public async Task<Result<PaginatedResult<DrugResponse>>> GetAllDrugsAsync(UserQueryParameters queryParams, CancellationToken cancellationToken)
+>>>>>>> Stashed changes
     {
         var drugs = await _context.Drugs.AsNoTracking().ToListAsync(cancellationToken);
         return drugs is not null ? Result.Success(drugs.Adapt<IEnumerable<DrugResponse>>()) : Result.Failure<IEnumerable<DrugResponse>>(DrugError.DrugNotFOund);

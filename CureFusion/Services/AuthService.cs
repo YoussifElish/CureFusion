@@ -254,6 +254,11 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
             return null;
 
 
+        if (user.IsDisabled)
+            return Result.Failure<AuthResponse>(AuthErrors.DisabledUser);
+
+        if(user.LockoutEnd>DateTime.UtcNow)
+            return Result.Failure<AuthResponse>(AuthErrors.LockedUser);
 
         var UserRefreshToken = user.RefreshTokens.SingleOrDefault(x => x.Token == RefreshToken && x.IsActive);
         if (UserRefreshToken is null)

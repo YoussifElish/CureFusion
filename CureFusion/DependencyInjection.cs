@@ -1,4 +1,5 @@
-﻿using CureFusion.Authentication.Filters;
+﻿using CureFusion.Abstactions;
+using CureFusion.Authentication.Filters;
 using CureFusion.Settings;
 using FluentValidation.AspNetCore;
 using Hangfire;
@@ -7,6 +8,7 @@ using MapsterMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using RealState.Services;
 using SurveyBasket.Services;
 
@@ -41,6 +43,7 @@ public static class DependencyInjection
         services.AddScoped<IDrugService, DrugService>();
         services.AddScoped<IQuestionService, QuestionService>();
         services.AddScoped<IAnswerService, AnswerService>();
+        services.AddScoped<IUserService, UserService>();
         services.AddScoped<IDoctorService, DoctorService>();
         services.AddScoped<IEmailSender, EmailService>();
         services.AddScoped<IArticleService, ArticleService>();
@@ -133,6 +136,7 @@ public static class DependencyInjection
                     ValidAudience = settings?.Audience
 
                 };
+            
             });
 
         return services;
@@ -146,6 +150,11 @@ public static class DependencyInjection
             options.Password.RequireNonAlphanumeric = false;
             options.SignIn.RequireConfirmedEmail = true;
             options.User.RequireUniqueEmail = true;
+
+            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+            options.Lockout.MaxFailedAccessAttempts = 5;
+            options.Lockout.AllowedForNewUsers = true;
+      
 
         });
 

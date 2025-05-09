@@ -1,4 +1,8 @@
+<<<<<<< Updated upstream
 ﻿
+=======
+
+
 namespace CureFusion.Controllers;
 
 [Route("api/[controller]")]
@@ -10,7 +14,10 @@ public class DrugController(IDrugService drug) : ControllerBase
         private readonly IDrugService _drug = drug;
 
         [HttpGet("GetALl")]
-        public async Task<IActionResult> GetAllasync(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetAllasync([FromQuery] UserQueryParameters drugQueryParameters ,CancellationToken cancellationToken)
+=======
+        public async Task<IActionResult> GetAllasync([FromQuery] UserQueryParameters drugQueryParameters ,CancellationToken cancellationToken)
+>>>>>>> Stashed changes
         {
             var Result = await _drug.GetAllDrugAsync(cancellationToken);
             return Result.IsSuccess ? Ok(Result.Value) : Result.ToProblem();
@@ -44,7 +51,7 @@ public class DrugController(IDrugService drug) : ControllerBase
         return Result.IsSuccess 
             ? NoContent()
             : Result.ToProblem();
-        //i will check it again 
+   
 
     }
     [Authorize(Roles =DefaultRoles.AdminRoleId+","+ DefaultRoles.DoctorRoleId)]

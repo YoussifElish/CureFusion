@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Diagnostics;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace CureFusion.Persistence;
 
@@ -8,11 +9,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
-        builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+       
+    
+    builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         var cascadeFKs = builder.Model.GetEntityTypes().SelectMany(t => t.GetForeignKeys()).Where(x=> x.DeleteBehavior == DeleteBehavior.Cascade && !x.IsOwnership);
         foreach (var fk in cascadeFKs)
             fk.DeleteBehavior = DeleteBehavior.Restrict;
         base.OnModelCreating(builder);
+
 
     }
     public DbSet<Question> Questions { get; set; }

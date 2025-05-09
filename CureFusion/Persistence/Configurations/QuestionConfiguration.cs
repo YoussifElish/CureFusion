@@ -13,5 +13,19 @@ public class QuestionConfiguration : IEntityTypeConfiguration<Question>
         builder.Property(a => a.CreatedIn)
             .HasDefaultValueSql("GETDATE()");
 
+
+
+  
+        builder.HasOne(q => q.User)
+               .WithMany(u => u.Questions)
+               .HasForeignKey(q => q.UserId)
+               .OnDelete(DeleteBehavior.Restrict);
+
+
+        builder.HasOne(q => q.RepliedByDoctor)
+               .WithMany()
+               .HasForeignKey(q => q.RepliedByDoctorId)
+               .OnDelete(DeleteBehavior.Restrict);
+
     }
 }

@@ -27,6 +27,31 @@ namespace SurveyBasket.Mapping
             .Map(dest => dest.UserName, src => src.User.FirstName + " " + src.User.LastName); // For concatenating user name
 
 
+<<<<<<< Updated upstream
+=======
+
+            TypeAdapterConfig<Drug, DrugResponse>.NewConfig()
+    .Map(dest => dest.DrugImage, 
+         src => src.DrugImageId != null ? $"{_filesPath}/{src.DrugImage.StoredFileName}" : null);
+
+
+
+          TypeAdapterConfig<(ApplicationUser user, IList<string> roles),UserResponse>.NewConfig()
+            .Map(dest => dest, src => src.user)
+            .Map(dest => dest.Roles, src => src.roles);
+
+            config.NewConfig<UserRequest, ApplicationUser>()
+                .Map(dest => dest.UserName, src => src.Email)
+                .Map(dest => dest.EmailConfirmed, src => true);
+
+            config.NewConfig<UpdateUserRequest, ApplicationUser>()
+                .Map(dest => dest.UserName, src => src.Email)
+               .Map(dest => dest.NormalizedUserName, src => src.Email);
+               
+
+
+
+>>>>>>> Stashed changes
         }
     }
 }

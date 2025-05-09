@@ -18,6 +18,7 @@ global using Microsoft.AspNetCore.Http;
 
 
 
+
 global using System.Text;
 global using System.Reflection;
 global using System.Security.Claims;
@@ -43,6 +44,7 @@ global using CureFusion.Enums;
 global using CureFusion.Errors;
 global using CureFusion.Contracts.Files;
 global using CureFusion.Contracts.Medicine;
+global using CureFusion.Helpers;
 
 
 

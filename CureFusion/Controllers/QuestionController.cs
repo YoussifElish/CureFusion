@@ -1,10 +1,7 @@
-﻿using CureFusion.Contracts.Common;
-using CureFusion.Contracts.Question;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using SurveyBasket.Abstactions;
 
+=======
+﻿
+>>>>>>> Stashed changes
 namespace CureFusion.Controllers;
 [Route("api/[controller]")]
 [Authorize]
