@@ -1,7 +1,4 @@
 
-=======
-﻿
->>>>>>> Stashed changes
 namespace CureFusion.Controllers;
 [Route("api/[controller]")]
 [Authorize]

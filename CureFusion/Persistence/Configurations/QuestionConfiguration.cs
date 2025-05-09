@@ -24,7 +24,7 @@ public class QuestionConfiguration : IEntityTypeConfiguration<Question>
 
         builder.HasOne(q => q.RepliedByDoctor)
                .WithMany()
-               .HasForeignKey(q => q.RepliedByDoctorId)
+               .HasForeignKey(q => q.RepliedByDoctor)
                .OnDelete(DeleteBehavior.Restrict);
 
     }

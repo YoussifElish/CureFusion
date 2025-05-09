@@ -10,11 +10,9 @@ public class Question
     public ReactType React { get; set; }
     public ICollection<Answer> Answers { get; set; } =  [];
     public ApplicationUser User { get; set; } = default!;
-<<<<<<< Updated upstream
-    public string UserId { get; set; }
-=======
+
+  
     public string? UserId { get; set; }
     public ApplicationUser? RepliedByDoctor { get; set; }
->>>>>>> Stashed changes
 }
 

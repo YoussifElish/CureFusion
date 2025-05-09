@@ -27,8 +27,7 @@ namespace SurveyBasket.Mapping
             .Map(dest => dest.UserName, src => src.User.FirstName + " " + src.User.LastName); // For concatenating user name
 
 
-<<<<<<< Updated upstream
-=======
+
 
             TypeAdapterConfig<Drug, DrugResponse>.NewConfig()
     .Map(dest => dest.DrugImage, 
@@ -51,7 +50,6 @@ namespace SurveyBasket.Mapping
 
 
 
->>>>>>> Stashed changes
         }
     }
 }
