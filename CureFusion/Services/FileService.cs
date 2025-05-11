@@ -1,7 +1,4 @@
-﻿using CureFusion.Contracts.Files;
-using CureFusion.Entities;
-using CureFusion.Persistence;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+﻿
 using static System.Net.Mime.MediaTypeNames;
 
 namespace RealState.Services;

@@ -1,10 +1,4 @@
-﻿using CureFusion.Abstactions;
-using CureFusion.Contracts.Medicine;
-using Mapster;
-using CureFusion.Errors;
-using CureFusion.Entities;
-using Microsoft.EntityFrameworkCore;
-using CureFusion.Contracts.Files;
+﻿
 using RealState.Services;
 using CureFusion.Contracts.Articles;
 

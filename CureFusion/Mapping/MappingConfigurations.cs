@@ -4,6 +4,7 @@ using CureFusion.Contracts.Question;
 using Mapster;
 using CureFusion.Services;
 using RealState.Services;
+using CureFusion.Contracts.Hospital;
 
 
 namespace SurveyBasket.Mapping
@@ -51,8 +52,10 @@ namespace SurveyBasket.Mapping
             config.NewConfig<UpdateUserRequest, ApplicationUser>()
                 .Map(dest => dest.UserName, src => src.Email)
                .Map(dest => dest.NormalizedUserName, src => src.Email);
-               
 
+
+
+        
 
 
         }
