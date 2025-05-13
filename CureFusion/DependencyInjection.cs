@@ -43,6 +43,8 @@ public static class DependencyInjection
         services.AddScoped<IDrugService, DrugService>();
         services.AddScoped<IQuestionService, QuestionService>();
         services.AddScoped<IAnswerService, AnswerService>();
+        services.AddScoped<IGeoCoding, GeocodingService>();
+        services.AddScoped<IGeoapifyService, GeoapifyService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IDoctorService, DoctorService>();
         services.AddScoped<IEmailSender, EmailService>();
@@ -51,8 +53,16 @@ public static class DependencyInjection
         services.AddScoped<ISessionService, SessionService>();
         services.AddScoped<ISubscriptionService, SubscriptionService>();
 
+        //services.AddHttpClient<GeoapifyService>();
+      services.AddScoped<IFileService, FileService>(); // Register your implementation of IFileService
+
+
+
 
         services.Configure<MailSettings>(config.GetSection(nameof(MailSettings)));
+        services.Configure<GeocodingOptions>(config.GetSection("Geocoding"));
+        services.Configure<GeoapifyOptions>(config.GetSection("Geoapify"));
+
         return services;
     }
 
@@ -91,10 +101,12 @@ public static class DependencyInjection
     {
         var mappingConfig = TypeAdapterConfig.GlobalSettings;
         mappingConfig.Scan(Assembly.GetExecutingAssembly());
-        services.AddSingleton<IMapper>(new Mapper(mappingConfig));
+        services.AddSingleton(mappingConfig);
+
 
         return services;
     }
+
 
     private static IServiceCollection AddAuthConfig(this IServiceCollection services, IConfiguration configuration)
     {

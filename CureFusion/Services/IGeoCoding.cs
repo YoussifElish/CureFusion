@@ -2,6 +2,6 @@
 
 public interface IGeoCoding
 {
-    Task<Location> GetCoordinatesAsync(string address);
+      Task<(double Latitude, double Longitude)> GetCoordinatesAsync(string zone);
 }
 

@@ -1,63 +1,51 @@
-﻿using CureFusion.Contracts.Answer;
-using CureFusion.Contracts.Appointment;
-using CureFusion.Contracts.Question;
-using Mapster;
-using CureFusion.Services;
+﻿using CureFusion.Contracts.Appointment;
 using RealState.Services;
-using CureFusion.Contracts.Hospital;
 
-
-namespace SurveyBasket.Mapping
+public class MappingConfigurations : IRegister
 {
-    public class MappingConfigurations(IFileService fileService) : IRegister
+    private readonly IFileService _fileService;
+    private readonly string _filesPath = $"https://curefusion2.runasp.net/Uploads"; //check it again
+
+    public MappingConfigurations()
     {
-        private readonly IFileService _fileService = fileService;
-        private readonly string _filesPath = $"https://curefusion2.runasp.net/Uploads"; //check it again
+    }
 
-        public void Register(TypeAdapterConfig config)
-        {
-            config.NewConfig<CureFusion.Contracts.Auth.RegisterRequest, ApplicationUser>().Map(dest => dest.UserName, src => src.Email).Map(dest => dest.EmailConfirmed, src => true);
-            config.NewConfig<RegisterAsDoctorRequest, ApplicationUser>().Map(dest => dest.UserName, src => src.Email).Map(dest => dest.EmailConfirmed, src => true);
+    public void Register(TypeAdapterConfig config)
+    {
+        config.NewConfig<CureFusion.Contracts.Auth.RegisterRequest, ApplicationUser>()
+              .Map(dest => dest.UserName, src => src.Email)
+              .Map(dest => dest.EmailConfirmed, src => true);
 
-            config.NewConfig<PatientAppointmentRequest, PatientAppointment>()
-    .Ignore(dest => dest.UserId);
+        config.NewConfig<RegisterAsDoctorRequest, ApplicationUser>()
+              .Map(dest => dest.UserName, src => src.Email)
+              .Map(dest => dest.EmailConfirmed, src => true);
 
-            TypeAdapterConfig<Question, QuestionResponse>.NewConfig()
-    .Map(dest => dest.UserName, src => src.User.FirstName + " " + src.User.LastName);
+        config.NewConfig<PatientAppointmentRequest, PatientAppointment>()
+              .Ignore(dest => dest.UserId);
 
+        TypeAdapterConfig<Question, QuestionResponse>.NewConfig()
+            .Map(dest => dest.UserName, src => src.User.FirstName + " " + src.User.LastName);
 
-            TypeAdapterConfig<AnswerRequest, Answer>.NewConfig()
-                     .Map(dest => dest.CreatedIn, src => DateTime.UtcNow); ; // For setting CreatedIn automatically
+        TypeAdapterConfig<AnswerRequest, Answer>.NewConfig()
+            .Map(dest => dest.CreatedIn, src => DateTime.UtcNow);
 
         TypeAdapterConfig<Answer, AnswerResponse>.NewConfig()
-            .Map(dest => dest.UserName, src => src.User.FirstName + " " + src.User.LastName); // For concatenating user name
+            .Map(dest => dest.UserName, src => src.User.FirstName + " " + src.User.LastName);
 
+        TypeAdapterConfig<Drug, DrugResponse>.NewConfig()
+            .Map(dest => dest.DrugImage,
+                 src => src.DrugImageId != null ? $"{_filesPath}/{src.DrugImage.StoredFileName}" : null);
 
-
-
-            TypeAdapterConfig<Drug, DrugResponse>.NewConfig()
-    .Map(dest => dest.DrugImage, 
-         src => src.DrugImageId != null ? $"{_filesPath}/{src.DrugImage.StoredFileName}" : null); //check it again
-
-
-
-          TypeAdapterConfig<(ApplicationUser user, IList<string> roles),UserResponse>.NewConfig()
+        TypeAdapterConfig<(ApplicationUser user, IList<string> roles), UserResponse>.NewConfig()
             .Map(dest => dest, src => src.user)
             .Map(dest => dest.Roles, src => src.roles);
 
-            config.NewConfig<UserRequest, ApplicationUser>()
-                .Map(dest => dest.UserName, src => src.Email)
-                .Map(dest => dest.EmailConfirmed, src => true);
+        config.NewConfig<UserRequest, ApplicationUser>()
+            .Map(dest => dest.UserName, src => src.Email)
+            .Map(dest => dest.EmailConfirmed, src => true);
 
-            config.NewConfig<UpdateUserRequest, ApplicationUser>()
-                .Map(dest => dest.UserName, src => src.Email)
-               .Map(dest => dest.NormalizedUserName, src => src.Email);
-
-
-
-        
-
-
-        }
+        config.NewConfig<UpdateUserRequest, ApplicationUser>()
+            .Map(dest => dest.UserName, src => src.Email)
+            .Map(dest => dest.NormalizedUserName, src => src.Email);
     }
 }
