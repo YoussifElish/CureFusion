@@ -12,7 +12,15 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         var cascadeFKs = builder.Model.GetEntityTypes().SelectMany(t => t.GetForeignKeys()).Where(x=> x.DeleteBehavior == DeleteBehavior.Cascade && !x.IsOwnership);
         foreach (var fk in cascadeFKs)
             fk.DeleteBehavior = DeleteBehavior.Restrict;
-        base.OnModelCreating(builder);
+
+        builder.Entity<ApplicationUser>()
+            .HasMany(u => u.Questions) 
+            .WithOne(q => q.User) 
+            .HasForeignKey(q => q.UserId) 
+            .OnDelete(DeleteBehavior.Restrict);
+
+        base.OnModelCreating(builder);  
+
 
     }
     public DbSet<Question> Questions { get; set; }
@@ -29,6 +37,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<UploadedFile> UploadedFiles { get; set; }
     public DbSet<Subscription>  subscriptions { get; set; }
     public DbSet<SubscriptionPlan>  subscriptionPlans{ get; set; }
+    public DbSet<Hospital>  hospitals { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
