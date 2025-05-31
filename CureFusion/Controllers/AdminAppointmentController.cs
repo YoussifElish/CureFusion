@@ -1,10 +1,6 @@
-﻿using CureFusion.Abstactions.Consts;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using SurveyBasket.Abstactions;
+﻿using CureFusion.Application.Services;
 
-namespace CureFusion.Controllers
+namespace CureFusion.API.Controllers
 {
     [Route("admin/appointment")]
     [ApiController]

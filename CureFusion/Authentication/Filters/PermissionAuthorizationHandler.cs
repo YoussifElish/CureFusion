@@ -1,8 +1,4 @@
-﻿
-using Microsoft.AspNetCore.Authorization;
-using SurveyBasket.Abstactions.Consts;
-
-namespace CureFusion.Authentication.Filters
+﻿namespace CureFusion.API.Authentication.Filters
 {
     public class PermissionAuthorizationHandler(RoleManager<ApplicationRole> roleManager) : AuthorizationHandler<PermissionRequirment>
     {

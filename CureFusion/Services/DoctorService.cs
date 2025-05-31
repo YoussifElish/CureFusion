@@ -1,15 +1,9 @@
-﻿using CureFusion.Abstactions;
-using CureFusion.Contracts.Doctor;
-using CureFusion.Contracts.Files;
-using CureFusion.Entities;
-using CureFusion.Enums;
-using CureFusion.Errors;
-using Mapster;
-using RealState.Services;
+﻿using CureFusion.Application.Contracts.Doctor;
+using CureFusion.Application.Services;
 
-namespace CureFusion.Services;
+namespace CureFusion.API.Services;
 
-public class DoctorService(ApplicationDbContext context , IHttpContextAccessor httpContextAccessor,ISessionService sessionService ,IFileService fileService) : IDoctorService
+public class DoctorService(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor, ISessionService sessionService, IFileService fileService) : IDoctorService
 {
     private readonly ApplicationDbContext _context = context;
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
@@ -26,8 +20,8 @@ public class DoctorService(ApplicationDbContext context , IHttpContextAccessor h
         // }
 
         var user = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var isRegisteredBefore = await _context.Doctors.Where(d=>d.UserId == user).SingleOrDefaultAsync();
-        
+        var isRegisteredBefore = await _context.Doctors.Where(d => d.UserId == user).SingleOrDefaultAsync();
+
         if (isRegisteredBefore is not null)
         {
             if (isRegisteredBefore.accountStatus == AccountStatus.Pending)
@@ -43,7 +37,7 @@ public class DoctorService(ApplicationDbContext context , IHttpContextAccessor h
                 return Result.Failure(DoctorErrors.Removed);
             }
 
-           else if (isRegisteredBefore.accountStatus == AccountStatus.Rejected)
+            else if (isRegisteredBefore.accountStatus == AccountStatus.Rejected)
             {
                 var doctorCertificateImage = await _fileService.UploadImagesAsync(imageRequest.CertificateImage, cancellationToken);
                 var doctorProfileImage = await _fileService.UploadImagesAsync(imageRequest.ProfileImage, cancellationToken);
@@ -63,16 +57,16 @@ public class DoctorService(ApplicationDbContext context , IHttpContextAccessor h
 
 
         var newDoctor = request.Adapt<Doctor>();
-            newDoctor.UserId = user; // TODO : I will remove it later when i add iaccessor to get current user id 
-            _context.Doctors.Add(newDoctor);
-            await _context.SaveChangesAsync(cancellationToken);
+        newDoctor.UserId = user; // TODO : I will remove it later when i add iaccessor to get current user id 
+        _context.Doctors.Add(newDoctor);
+        await _context.SaveChangesAsync(cancellationToken);
 
-            return Result.Success();
-        
+        return Result.Success();
+
     }
 
 
-    public async Task<Result> DoctorAvaliability(DoctorAvailabilityRequest request,  CancellationToken cancellationToken = default)
+    public async Task<Result> DoctorAvaliability(DoctorAvailabilityRequest request, CancellationToken cancellationToken = default)
     {
         var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var isUserDoctor = await _context.Doctors.Where(d => d.UserId == userId).SingleOrDefaultAsync(cancellationToken);
@@ -84,7 +78,7 @@ public class DoctorService(ApplicationDbContext context , IHttpContextAccessor h
         var isSessionDuplicated = await _context.DoctorAvailabilities
      .AnyAsync(x => x.DoctorId == isUserDoctor.Id &&
                     (
-                        (x.From < request.To && x.To > request.From && x.Date == request.Date && x.IsActive)  
+                        (x.From < request.To && x.To > request.From && x.Date == request.Date && x.IsActive)
                     ), cancellationToken);
 
 
@@ -93,7 +87,7 @@ public class DoctorService(ApplicationDbContext context , IHttpContextAccessor h
 
         var doctorAvailability = request.Adapt<DoctorAvailability>();
         doctorAvailability.DoctorId = isUserDoctor.Id;
-         _context.DoctorAvailabilities.Add(doctorAvailability);
+        _context.DoctorAvailabilities.Add(doctorAvailability);
         await _context.SaveChangesAsync(cancellationToken);
 
         var appointments = new List<Appointment>();
@@ -108,8 +102,8 @@ public class DoctorService(ApplicationDbContext context , IHttpContextAccessor h
             {
                 DoctorId = isUserDoctor.Id,
                 AppointmentDate = request.Date.Add(startTime),
-                Status = AppointmentStatus.NotReversed, 
-                DurationInMinutes = request.SlotDurationInMinutes, 
+                Status = AppointmentStatus.NotReversed,
+                DurationInMinutes = request.SlotDurationInMinutes,
                 AppointmentType = request.SessionMode,
                 DoctorAvailabilityId = doctorAvailability.Id,
                 doctorAvailability = doctorAvailability,
@@ -156,7 +150,7 @@ public class DoctorService(ApplicationDbContext context , IHttpContextAccessor h
 
         if (doctor == null)
             return Result.Failure<List<Appointment>>(DoctorErrors.NotDoctor);
-        var appointments = await _context.Appointments.Include(x=>x.doctorAvailability)
+        var appointments = await _context.Appointments.Include(x => x.doctorAvailability)
             .Where(a => a.DoctorId == doctor.Id && a.AppointmentDate >= DateTime.UtcNow.Date && a.doctorAvailability.IsActive)
             .OrderByDescending(a => a.AppointmentDate)
             .ToListAsync(cancellationToken);

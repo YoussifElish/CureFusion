@@ -1,16 +1,5 @@
-﻿using CureFusion.Abstactions;
-using CureFusion.Contracts.Answer;
-using CureFusion.Entities;
-using CureFusion.Errors;
-using Mapster;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace CureFusion.Services;
+﻿using CureFusion.Application.Services;
+namespace CureFusion.API.Services;
 
 // Inject UserManager to check user roles
 public class AnswerService(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IHttpContextAccessor httpContextAccessor) : IAnswerService
@@ -19,7 +8,7 @@ public class AnswerService(ApplicationDbContext context, UserManager<Application
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
-    public async Task<Result<AnswerResponse>> AddAnswer(int QuestionId, AnswerRequest content,  CancellationToken cancellationToken)
+    public async Task<Result<AnswerResponse>> AddAnswer(int QuestionId, AnswerRequest content, CancellationToken cancellationToken)
     {
         var UserId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -89,7 +78,7 @@ public class AnswerService(ApplicationDbContext context, UserManager<Application
         return Result.Success(fullAnswer);
     }
 
-    public async Task<Result> DeleteAnswerAsync(int id, int questionId,  CancellationToken cancellationToken)
+    public async Task<Result> DeleteAnswerAsync(int id, int questionId, CancellationToken cancellationToken)
     {
         var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -187,7 +176,7 @@ public class AnswerService(ApplicationDbContext context, UserManager<Application
 
     public async Task<Result> UpvoteAnswerAsync(int answerId, CancellationToken cancellationToken)
     {
-        var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
         var answer = await _context.Answers.FindAsync(answerId, cancellationToken);
         if (answer is null)
         {
@@ -205,7 +194,7 @@ public class AnswerService(ApplicationDbContext context, UserManager<Application
 
     public async Task<Result> DownvoteDAnswerAsync(int answerId, CancellationToken cancellationToken)
     {
-        var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
         var answer = await _context.Answers.FindAsync(answerId, cancellationToken);
         if (answer is null)
         {

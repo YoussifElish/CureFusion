@@ -1,13 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using SurveyBasket.Abstactions;
-using System.Text.Json;
+﻿using System.Text.Json;
+using CureFusion.Application.Services;
 
-namespace CureFusion.Controllers
+namespace CureFusion.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PaymentController(IAppointmentService appointmentService,ILogger<PaymentController> logger) : ControllerBase
+    public class PaymentController(IAppointmentService appointmentService, ILogger<PaymentController> logger) : ControllerBase
     {
         private readonly IAppointmentService _appointmentService = appointmentService;
         private readonly ILogger<PaymentController> _logger = logger;
@@ -29,12 +27,12 @@ namespace CureFusion.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Exception occurred in PaymobProcessedCallback");
-                 return StatusCode(500, "Internal server error");
+                return StatusCode(500, "Internal server error");
             }
         }
 
         [HttpGet("response-callback")]
-        public async Task<IActionResult> PaymobResponseCallback([FromQuery] bool success,[FromQuery(Name = "merchant_order_id")] string merchantOrderId
+        public async Task<IActionResult> PaymobResponseCallback([FromQuery] bool success, [FromQuery(Name = "merchant_order_id")] string merchantOrderId
 )
         {
             try

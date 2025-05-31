@@ -1,26 +1,16 @@
 ﻿// Controller to expose AdminService endpoints.
 
-using CureFusion.Abstactions;
-using CureFusion.Contracts.Admin;
-using CureFusion.Contracts.Common;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Threading;
-using System.Threading.Tasks;
+using CureFusion.Application.Contracts.Admin;
+using CureFusion.Application.Services;
 
-namespace CureFusion.Controllers;
+namespace CureFusion.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 [Authorize(Roles = "Admin")] // Secure endpoints for Admin role only
-public class AdminController : ControllerBase
+public class AdminController(IAdminService adminService) : ControllerBase
 {
-    private readonly IAdminService _adminService;
-
-    public AdminController(IAdminService adminService)
-    {
-        _adminService = adminService;
-    }
+    private readonly IAdminService _adminService = adminService;
 
     // GET: api/Admin/dashboard-stats
     [HttpGet("dashboard-stats")]

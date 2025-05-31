@@ -1,10 +1,7 @@
-﻿using CureFusion.Contracts.Appointment;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using SurveyBasket.Abstactions;
+﻿using CureFusion.Application.Contracts.Appointment;
+using CureFusion.Application.Services;
 
-namespace CureFusion.Controllers
+namespace CureFusion.API.Controllers
 {
     [Route("Patient/Appointment")]
     [ApiController]
@@ -18,14 +15,14 @@ namespace CureFusion.Controllers
         {
             var result = await _appointmentService.GetActiveAppointments(cancellationToken);
             return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
-        }  
-        
+        }
+
         [HttpGet("GetActiveAppointmentsByDoctorId")]
-        public async Task<IActionResult> GetActiveAppointmentsByDoctorId([FromQuery]int id ,CancellationToken cancellationToken)
+        public async Task<IActionResult> GetActiveAppointmentsByDoctorId([FromQuery] int id, CancellationToken cancellationToken)
         {
-            var result = await _appointmentService.GetActiveAppointmentsByDoctorId(id,cancellationToken);
+            var result = await _appointmentService.GetActiveAppointmentsByDoctorId(id, cancellationToken);
             return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
-        } 
+        }
         [HttpGet("GetDoctorsWithAppoitments")]
         public async Task<IActionResult> GetDoctorsWithAppoitments(CancellationToken cancellationToken)
         {

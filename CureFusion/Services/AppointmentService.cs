@@ -1,13 +1,8 @@
-﻿using CureFusion.Abstactions;
-using CureFusion.Contracts.Appointment;
-using CureFusion.Contracts.Doctor;
-using CureFusion.Entities;
-using CureFusion.Enums;
-using CureFusion.Errors;
-using Mapster;
-using Microsoft.EntityFrameworkCore;
+﻿using CureFusion.Application.Contracts.Appointment;
+using CureFusion.Application.Contracts.Doctor;
+using CureFusion.Application.Services;
 
-namespace CureFusion.Services;
+namespace CureFusion.API.Services;
 
 public class AppointmentService(ApplicationDbContext dbContext, IHttpContextAccessor httpContextAccessor, PaymobService paymobService) : IAppointmentService
 {
@@ -32,12 +27,12 @@ public class AppointmentService(ApplicationDbContext dbContext, IHttpContextAcce
     {
         var doctorsWithAppointments = await _dbContext.Appointments
             .Include(x => x.Doctor).
-            ThenInclude(x=>x.User)
+            ThenInclude(x => x.User)
             .Where(x => x.Doctor != null)
             .Select(x => x.Doctor)
             .Distinct()
-            .ToListAsync();
-        
+            .ToListAsync(cancellationToken);
+
 
         foreach (var item in doctorsWithAppointments)
         {
@@ -65,7 +60,7 @@ public class AppointmentService(ApplicationDbContext dbContext, IHttpContextAcce
 
     public async Task<Result<IEnumerable<AppointmentResponse>>> GetActiveAppointments(CancellationToken cancellationToken = default)
     {
-        var appointments = await _dbContext.Appointments.Where(Appointment => Appointment.Status != Enums.AppointmentStatus.Canceled)
+        var appointments = await _dbContext.Appointments.Where(Appointment => Appointment.Status != Domain.Enums.AppointmentStatus.Canceled)
        .AsNoTracking()
        .ToListAsync(cancellationToken);
         var appointmentResponses = appointments.Adapt<IEnumerable<AppointmentResponse>>();
@@ -74,9 +69,9 @@ public class AppointmentService(ApplicationDbContext dbContext, IHttpContextAcce
 
     }
 
-    public async Task<Result<IEnumerable<AppointmentResponse>>> GetActiveAppointmentsByDoctorId(int id , CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<AppointmentResponse>>> GetActiveAppointmentsByDoctorId(int id, CancellationToken cancellationToken = default)
     {
-        var appointments = await _dbContext.Appointments.Where(Appointment => Appointment.DoctorId == id &&Appointment.Status == Enums.AppointmentStatus.NotReversed && Appointment.AppointmentDate >= DateTime.Today)
+        var appointments = await _dbContext.Appointments.Where(Appointment => Appointment.DoctorId == id && Appointment.Status == Domain.Enums.AppointmentStatus.NotReversed && Appointment.AppointmentDate >= DateTime.Today)
        .AsNoTracking()
        .ToListAsync(cancellationToken);
         var appointmentResponses = appointments.Adapt<IEnumerable<AppointmentResponse>>();
@@ -90,7 +85,7 @@ public class AppointmentService(ApplicationDbContext dbContext, IHttpContextAcce
 
         var appointment = await _dbContext.Appointments
             .Where(x => x.Id == AppointmentId)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
         if (appointment.Doctor.UserId != userId)
         {
             return Result.Failure(AppointmentErrors.NotAuthorized);
@@ -101,11 +96,11 @@ public class AppointmentService(ApplicationDbContext dbContext, IHttpContextAcce
         {
             return Result.Failure(AppointmentErrors.ExceedTime);
         }
-        if (appointment.Status == Enums.AppointmentStatus.Canceled)
+        if (appointment.Status == Domain.Enums.AppointmentStatus.Canceled)
         {
             return Result.Failure(AppointmentErrors.CancelledSession);
         }
-        appointment.Status = Enums.AppointmentStatus.Canceled;
+        appointment.Status = Domain.Enums.AppointmentStatus.Canceled;
         _dbContext.Appointments.Update(appointment);
         await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success();
@@ -147,7 +142,7 @@ public class AppointmentService(ApplicationDbContext dbContext, IHttpContextAcce
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         var response = patientAppointment.Adapt<PatientAppointmentResponse>();
-        
+
 
 
         return Result.Success(response);

@@ -1,13 +1,11 @@
-﻿using CureFusion.Contracts.Drug;
-using Mapster;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using CureFusion.Application.Contracts.Drug;
+using CureFusion.Application.Services;
 
-namespace CureFusion.Controllers
+namespace CureFusion.API.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class DrugReminderController(IDrugReminderService drugReminderService,ApplicationDbContext context) : ControllerBase
+    public class DrugReminderController(IDrugReminderService drugReminderService, ApplicationDbContext context) : ControllerBase
     {
         private readonly IDrugReminderService _drugReminderService = drugReminderService;
         private readonly ApplicationDbContext _context = context;
@@ -21,7 +19,7 @@ namespace CureFusion.Controllers
             }
 
             var reminder = drugReminderRequest.Adapt<DrugReminder>();
-            reminder.Drug = drug;  
+            reminder.Drug = drug;
 
             await _context.AddAsync(reminder);
             await _context.SaveChangesAsync();

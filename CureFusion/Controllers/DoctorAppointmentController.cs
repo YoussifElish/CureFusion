@@ -1,12 +1,7 @@
-﻿using CureFusion.Abstactions.Consts;
-using CureFusion.Contracts.Doctor;
-using CureFusion.Contracts.Files;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using SurveyBasket.Abstactions;
+﻿using CureFusion.Application.Contracts.Doctor;
+using CureFusion.Application.Services;
 
-namespace CureFusion.Controllers
+namespace CureFusion.API.Controllers
 {
     [Route("Doctor")]
     [ApiController]
@@ -41,7 +36,7 @@ namespace CureFusion.Controllers
 
             var result = await _doctorService.DeleteDoctorAvaliability(id, cancellationToken);
             return result.IsSuccess ? Ok() : result.ToProblem();
-        }     
+        }
         [HttpDelete("Appointment/DeleteDoctorAppointment/{id}")]
         [Authorize(Roles = DefaultRoles.Doctor)]
 
@@ -66,7 +61,7 @@ namespace CureFusion.Controllers
         {
             var result = await _doctorService.GetDoctorAvailabilities(cancellationToken);
             return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
-        }  
+        }
         [HttpGet("GetAllDoctorAppointments")]
         [Authorize(Roles = DefaultRoles.Doctor)]
 

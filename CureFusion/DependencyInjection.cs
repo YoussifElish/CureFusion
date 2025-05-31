@@ -1,16 +1,14 @@
-﻿using CureFusion.Authentication.Filters;
-using CureFusion.Settings;
+﻿using CureFusion.API.Authentication.Filters;
+using CureFusion.Application.Authentication;
+using CureFusion.Application.Services;
+using CureFusion.Domain.Common;
+using CureFusion.Services;
 using FluentValidation.AspNetCore;
 using Hangfire;
-using Mapster;
 using MapsterMapper;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.Extensions.Configuration;
-using RealState.Services;
-using SurveyBasket.Services;
 
-namespace CureFusion;
+namespace CureFusion.API;
 
 public static class DependencyInjection
 {
@@ -22,7 +20,7 @@ public static class DependencyInjection
                          .AllowAnyHeader()
                          .AllowAnyMethod()));
 
-        services.AddDatabaseConnection (config);
+        services.AddDatabaseConnection(config);
         services.AddAuthConfig(config);
         services.AddHttpContextAccessor();
         services.AddMapsterConfig();
@@ -48,7 +46,6 @@ public static class DependencyInjection
         services.AddScoped<IFileService, FileService>();
         services.AddScoped<ISessionService, SessionService>();
         services.AddScoped<IAdminService, AdminService>();
-        services.AddScoped<ISubscriptionService, SubscriptionService>();
         services.AddOptions<TwilioSettings>()
             .BindConfiguration("TwilioSettings")
             .ValidateDataAnnotations()
@@ -59,14 +56,14 @@ public static class DependencyInjection
     }
 
 
-     // FluentValidation Configuration
-        private static IServiceCollection AddFluentValidationConfig(this IServiceCollection services)
-        {
-            services.AddFluentValidationAutoValidation()
-                    .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+    // FluentValidation Configuration
+    private static IServiceCollection AddFluentValidationConfig(this IServiceCollection services)
+    {
+        services.AddFluentValidationAutoValidation()
+                .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
-            return services;
-        }
+        return services;
+    }
 
     private static IServiceCollection AddBackgroundJobsConfig(this IServiceCollection services, IConfiguration configuration)
     {
@@ -83,7 +80,7 @@ public static class DependencyInjection
     private static IServiceCollection AddDatabaseConnection(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection String Not Found");
-         services.AddDbContext<ApplicationDbContext>(option => option.UseSqlServer(connectionString));
+        services.AddDbContext<ApplicationDbContext>(option => option.UseSqlServer(connectionString));
 
         return services;
     }

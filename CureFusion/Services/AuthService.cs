@@ -1,24 +1,13 @@
 ﻿using System.Security.Cryptography;
-using CureFusion.Helpers;
-using CureFusion.Abstactions;
-using CureFusion.Errors;
+using CureFusion.Application.Authentication;
+using CureFusion.Application.Services;
+using CureFusion.Infrastructure.Helpers;
 using Hangfire;
-using Mapster;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.WebUtilities;
-using CureFusion.Contracts.Authentication;
-using CureFusion.Entities;
-using CureFusion.Abstactions.Consts;
-using Microsoft.EntityFrameworkCore;
-using CureFusion.Enums;
-using System.Threading;
-using CureFusion.Contracts.Files;
-using RealState.Services;
 
-namespace CureFusion.Services;
+namespace CureFusion.API.Services;
 
-public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider jwtProvider, IHttpContextAccessor httpContextAccessor, IEmailSender emailSender,ILogger<AuthService> logger, SignInManager<ApplicationUser> signInManager,ApplicationDbContext context ,ISessionService sessionService,IFileService fileService) : IAuthService
+public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider jwtProvider, IHttpContextAccessor httpContextAccessor, IEmailSender emailSender, ILogger<AuthService> logger, SignInManager<ApplicationUser> signInManager, ApplicationDbContext context, ISessionService sessionService, IFileService fileService) : IAuthService
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IJwtProvider _jwtProvider = jwtProvider;
@@ -79,7 +68,7 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
 
         return Result.Failure<AuthResponse>(error);
     }
-    public async Task<Result> RegisterAsync(Contracts.Auth.RegisterRequest request, CancellationToken cancellationToken)
+    public async Task<Result> RegisterAsync(Application.Contracts.Auth.RegisterRequest request, CancellationToken cancellationToken)
     {
         var emailIsExist = await _userManager.Users.AnyAsync(x => x.Email == request.Email, cancellationToken);
         if (emailIsExist)
@@ -119,7 +108,7 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
         if (userSession == null || !userSession.IsActive)
             return Result.Failure(AuthErrors.InvalidSession);
 
-        userSession.IsActive = false;   
+        userSession.IsActive = false;
         await _context.SaveChangesAsync(cancellationToken);
 
         return Result.Success();
@@ -140,7 +129,7 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
 
             var random = new Random();
             var code = random.Next(100000, 999999).ToString();
-          
+
             _logger.LogInformation("Confirmation Code: {Code}", code);
             user.EmailConfirmationCode = code;
             user.EmailConfirmationCodeExpiration = DateTime.UtcNow.AddMinutes(10);
@@ -192,7 +181,7 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
         await _userManager.UpdateAsync(user);
         return Result.Success();
     }
-   
+
     public async Task<Result> SentResetPasswordCodeAsync(string email)
     {
         if (await _userManager.FindByEmailAsync(email) is not { } user)
@@ -210,7 +199,7 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
         return Result.Success();
 
     }
-    public async Task<Result> ResetPasswordAsync(Contracts.Authentication.ResetPasswordRequest request)
+    public async Task<Result> ResetPasswordAsync(Application.Contracts.Authentication.ResetPasswordRequest request)
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user is null || !user.EmailConfirmed)

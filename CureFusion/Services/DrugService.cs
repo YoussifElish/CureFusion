@@ -1,15 +1,8 @@
-﻿using CureFusion.Abstactions;
-using CureFusion.Contracts.Medicine;
-using Mapster;
-using CureFusion.Errors;
-using CureFusion.Entities;
-using Microsoft.EntityFrameworkCore;
-using CureFusion.Contracts.Files;
-using RealState.Services;
-using CureFusion.Contracts.Articles;
-using CureFusion.Helpers;
+﻿using CureFusion.API.Helpers;
+using CureFusion.Application.Contracts.Articles;
+using CureFusion.Application.Services;
 
-namespace CureFusion.Services;
+namespace CureFusion.API.Services;
 
 public class DrugService(ApplicationDbContext Context, IFileService fileService) : IDrugService
 {
@@ -54,7 +47,7 @@ public class DrugService(ApplicationDbContext Context, IFileService fileService)
 
     public async Task<Result<PaginatedResult<DrugResponse>>> GetAllDrugsAsync(DrugQueryParameters queryParams, CancellationToken cancellationToken)
     {
-        var query = _context.Drugs.Include(x=>x.DrugImage).AsNoTracking();
+        var query = _context.Drugs.Include(x => x.DrugImage).AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(queryParams.SearchTerm))
         {
@@ -74,7 +67,7 @@ public class DrugService(ApplicationDbContext Context, IFileService fileService)
             .Take(queryParams.PageSize)
             .ToListAsync(cancellationToken);
 
-     var response = drugs.Adapt<List<DrugResponse>>();
+        var response = drugs.Adapt<List<DrugResponse>>();
 
 
         var paginatedResult = new PaginatedResult<DrugResponse>(
@@ -89,7 +82,7 @@ public class DrugService(ApplicationDbContext Context, IFileService fileService)
 
     public async Task<Result<DrugResponse>> GetDrugAsync(int id, CancellationToken cancellationToken)
     {
-        var drug = await _context.Drugs.Include(x=>x.DrugImage).Where(x=>x.Id == id).FirstOrDefaultAsync();
+        var drug = await _context.Drugs.Include(x => x.DrugImage).Where(x => x.Id == id).FirstOrDefaultAsync();
         var response = drug.Adapt<DrugResponse>();
         return response is not null ? Result.Success(response) : Result.Failure<DrugResponse>(DrugError.DrugNotFOund);
     }

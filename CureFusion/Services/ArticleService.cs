@@ -1,18 +1,7 @@
-﻿using CureFusion.Abstactions;
-using CureFusion.Contracts.Articles;
-using CureFusion.Contracts.Files;
-using CureFusion.Entities;
-using CureFusion.Errors;
-using CureFusion.Services;
-using Mapster;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using RealState.Services;
-using System.Linq.Expressions;
-using System.Text.RegularExpressions;
-using System.Linq.Dynamic.Core;
-using static System.Net.WebRequestMethods;
-namespace CureFusion.Services;
+﻿using System.Linq.Dynamic.Core;
+using CureFusion.Application.Contracts.Articles;
+using CureFusion.Application.Services;
+namespace CureFusion.API.Services;
 
 public class ArticleService(ApplicationDbContext context, IFileService fileService, IWebHostEnvironment webHostEnvironment) : IArticleService
 {
@@ -22,10 +11,10 @@ public class ArticleService(ApplicationDbContext context, IFileService fileServi
 
     public async Task<Result<ArticleResponse>> CreateArticleAsync(CreateArticleRequest request, string Content, UploadImageRequest? articleImage, string authorId, CancellationToken cancellationToken)
     {
-    
+
 
         Guid? imageId = null;
-        if (articleImage?.Image is  null)
+        if (articleImage?.Image is null)
         {
             return Result.Failure<ArticleResponse>(ArticleErrors.ImageNotProvided);
         }
@@ -39,7 +28,7 @@ public class ArticleService(ApplicationDbContext context, IFileService fileServi
             Content = Content,
             Category = request.Category,
             Tags = request.Tags ?? string.Empty,
-            Status = ArticleStatus.Published, 
+            Status = ArticleStatus.Published,
             PublishedDate = DateTime.UtcNow,
             AuthorId = authorId,
             HealthArticleImageId = imageId
@@ -60,7 +49,7 @@ public class ArticleService(ApplicationDbContext context, IFileService fileServi
 
     public async Task<Result> DeleteArticleAsync(int id, CancellationToken cancellationToken)
     {
-        var article = await _context.HealthArticles.FindAsync( id , cancellationToken);
+        var article = await _context.HealthArticles.FindAsync(id, cancellationToken);
         if (article is null)
         {
             return Result.Failure(ArticleErrors.ArticleNotFound);
@@ -69,11 +58,11 @@ public class ArticleService(ApplicationDbContext context, IFileService fileServi
 
         if (article.HealthArticleImageId.HasValue)
         {
-           var images = await _context.UploadedFiles.Where(x=> x.Id == article.HealthArticleImageId).ToListAsync(cancellationToken);
+            var images = await _context.UploadedFiles.Where(x => x.Id == article.HealthArticleImageId).ToListAsync(cancellationToken);
             if (images.Any())
             {
-                 _context.RemoveRange(images);
-              
+                _context.RemoveRange(images);
+
             }
         }
 
@@ -87,20 +76,20 @@ public class ArticleService(ApplicationDbContext context, IFileService fileServi
     {
         var query = _context.HealthArticles
             .Include(a => a.Author)
-            .Include(a => a.HealthArticleImage) 
+            .Include(a => a.HealthArticleImage)
             .AsNoTracking();
 
         // Filtering
         if (queryParams.Category.HasValue)
         {
-            query = query.Where(a => a.Category == queryParams.Category );
+            query = query.Where(a => a.Category == queryParams.Category);
         }
         if (!string.IsNullOrWhiteSpace(queryParams.Tag))
         {
             // Assuming Tags is comma-separated
             query = query.Where(a => a.Tags.ToLower().Contains(queryParams.Tag.ToLower()));
         }
-  
+
         if (!string.IsNullOrWhiteSpace(queryParams.SearchTerm))
         {
             query = query.Where(a => a.Title.ToLower().Contains(queryParams.SearchTerm.ToLower()) ||
@@ -139,7 +128,7 @@ public class ArticleService(ApplicationDbContext context, IFileService fileServi
             article.Id,
             article.Title,
             article.Summary,
-            article.Content, 
+            article.Content,
             article.Category,
             article.Tags,
             article.Status.ToString(),
@@ -147,10 +136,10 @@ public class ArticleService(ApplicationDbContext context, IFileService fileServi
             article.ViewCount,
             article.Author != null ? $"{article.Author.FirstName} {article.Author.LastName}" : "Unknown",
            article.Author != null ? $"{article.Author.Id}" : "Unknown",
-            article.HealthArticleImage != null ? $"{_filesPath}/{article.HealthArticleImage.StoredFileName}" : null 
+            article.HealthArticleImage != null ? $"{_filesPath}/{article.HealthArticleImage.StoredFileName}" : null
         )).ToList();
 
-   
+
         return Result.Success<IEnumerable<ArticleResponse>>(response);
     }
 
@@ -185,10 +174,10 @@ public class ArticleService(ApplicationDbContext context, IFileService fileServi
         return Result.Success(response);
     }
 
-  
+
     public async Task<Result> IncrementArticleViewCountAsync(int id, CancellationToken cancellationToken)
     {
-        var article = await _context.HealthArticles.FindAsync( id , cancellationToken);
+        var article = await _context.HealthArticles.FindAsync(id, cancellationToken);
         if (article is null)
         {
             return Result.Failure(ArticleErrors.ArticleNotFound);
@@ -200,9 +189,9 @@ public class ArticleService(ApplicationDbContext context, IFileService fileServi
         return Result.Success();
     }
 
-    public async Task<Result> UpdateArticleAsync(int id, string content,UpdateArticleRequest request, UploadImageRequest? articleImage, CancellationToken cancellationToken)
+    public async Task<Result> UpdateArticleAsync(int id, string content, UpdateArticleRequest request, UploadImageRequest? articleImage, CancellationToken cancellationToken)
     {
-        var article = await _context.HealthArticles.FindAsync( id , cancellationToken);
+        var article = await _context.HealthArticles.FindAsync(id, cancellationToken);
         if (article is null)
         {
             return Result.Failure(ArticleErrors.ArticleNotFound);
@@ -217,7 +206,7 @@ public class ArticleService(ApplicationDbContext context, IFileService fileServi
 
         if (articleImage?.Image is not null)
         {
-           
+
             if (article.HealthArticleImageId.HasValue)
             {
                 var images = await _context.UploadedFiles.Where(x => x.Id == article.HealthArticleImageId).ToListAsync(cancellationToken);
@@ -227,7 +216,7 @@ public class ArticleService(ApplicationDbContext context, IFileService fileServi
 
                 }
             }
-         
+
             var imageResult = await _fileService.UploadImagesAsync(articleImage.Image, cancellationToken);
             article.HealthArticleImageId = imageResult.Id;
         }
@@ -238,7 +227,7 @@ public class ArticleService(ApplicationDbContext context, IFileService fileServi
 
     public async Task<Result> UpdateArticleStatusAsync(int id, UpdateArticleStatusRequest request, CancellationToken cancellationToken)
     {
-        var article = await _context.HealthArticles.FindAsync( id , cancellationToken);
+        var article = await _context.HealthArticles.FindAsync(id, cancellationToken);
         if (article is null)
         {
             return Result.Failure(ArticleErrors.ArticleNotFound);
@@ -247,8 +236,8 @@ public class ArticleService(ApplicationDbContext context, IFileService fileServi
         if (Enum.TryParse<ArticleStatus>(request.Status, true, out var newStatus))
         {
             article.Status = newStatus;
-           
-            if (newStatus == ArticleStatus.Published && article.Status != ArticleStatus.Published) 
+
+            if (newStatus == ArticleStatus.Published && article.Status != ArticleStatus.Published)
             {
                 article.PublishedDate = DateTime.UtcNow;
             }
@@ -261,7 +250,7 @@ public class ArticleService(ApplicationDbContext context, IFileService fileServi
         }
     }
 
-  
-  
+
+
 }
 

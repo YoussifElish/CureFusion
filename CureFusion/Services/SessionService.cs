@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CureFusion.Application.Services;
 
-namespace CureFusion.Services;
+namespace CureFusion.API.Services;
 
 public class SessionService(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor) : ISessionService
 {

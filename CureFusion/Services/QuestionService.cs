@@ -1,19 +1,7 @@
 ﻿using System.Linq.Dynamic.Core;
-using CureFusion.Abstactions;
-using CureFusion.Contracts.Answer;
-using CureFusion.Contracts.Common;
-using CureFusion.Contracts.Question;
-using CureFusion.Entities;
-using CureFusion.Errors;
-using Mapster;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using CureFusion.Application.Services;
 
-namespace CureFusion.Services;
+namespace CureFusion.API.Services;
 
 public class QuestionService(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IHttpContextAccessor httpContextAccessor) : IQuestionService
 {
@@ -21,7 +9,7 @@ public class QuestionService(ApplicationDbContext context, UserManager<Applicati
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
-    public async Task<Result<QuestionResponse>> CreateQuestion(QuestionRequest questionRequest,  CancellationToken cancellationToken)
+    public async Task<Result<QuestionResponse>> CreateQuestion(QuestionRequest questionRequest, CancellationToken cancellationToken)
     {
         var userid = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -212,7 +200,7 @@ public class QuestionService(ApplicationDbContext context, UserManager<Applicati
 
     // --- Voting Methods ---
 
-    public async Task<Result> UpvoteQuestionAsync(int questionId,  CancellationToken cancellationToken)
+    public async Task<Result> UpvoteQuestionAsync(int questionId, CancellationToken cancellationToken)
     {
         var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -230,7 +218,7 @@ public class QuestionService(ApplicationDbContext context, UserManager<Applicati
         return Result.Success();
     }
 
-    public async Task<Result> DownvoteQuestionAsync(int questionId,  CancellationToken cancellationToken)
+    public async Task<Result> DownvoteQuestionAsync(int questionId, CancellationToken cancellationToken)
     {
         var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
 

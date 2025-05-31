@@ -1,10 +1,8 @@
-﻿using CureFusion.Contracts.Authentication;
-using CureFusion.Contracts.Files;
-using CureFusion.Services;
-using Microsoft.AspNetCore.Identity.Data;
-using SurveyBasket.Abstactions;
+﻿using CureFusion.Application.Authentication;
+using CureFusion.Application.Contracts.Authentication;
+using CureFusion.Application.Services;
 
-namespace CureFusion.Controllers;
+namespace CureFusion.API.Controllers;
 [Route("[controller]")]
 [ApiController]
 public class AuthController(IAuthService authService, IOptions<JwtOptions> JwtOptions) : ControllerBase
@@ -13,7 +11,7 @@ public class AuthController(IAuthService authService, IOptions<JwtOptions> JwtOp
     private readonly JwtOptions _jwtOptions = JwtOptions.Value;
 
     [HttpPost("Login")]
-    public async Task<IActionResult> LoginAsync(Loginrequest request, CancellationToken     cancellationToken)
+    public async Task<IActionResult> LoginAsync(Loginrequest request, CancellationToken cancellationToken)
     {
         var authResult = await _authService.GetTokenAsync(request.Email, request.Password, cancellationToken);
 
@@ -30,7 +28,7 @@ public class AuthController(IAuthService authService, IOptions<JwtOptions> JwtOp
 
     [HttpPost("register")]
 
-    public async Task<IActionResult> Register([FromBody] Contracts.Auth.RegisterRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Register([FromBody] Application.Contracts.Auth.RegisterRequest request, CancellationToken cancellationToken)
     {
         var authResult = await _authService.RegisterAsync(request, cancellationToken);
         return authResult.IsSuccess ? Ok() : authResult.ToProblem();
@@ -38,7 +36,7 @@ public class AuthController(IAuthService authService, IOptions<JwtOptions> JwtOp
     }
     [HttpPost("register-as-doctor")]
 
-    public async Task<IActionResult> RegisterAsDoctor([FromForm] RegisterAsDoctorRequest request, [FromForm]  RegisterDoctorImageRequest imageRequest, CancellationToken cancellationToken)
+    public async Task<IActionResult> RegisterAsDoctor([FromForm] RegisterAsDoctorRequest request, [FromForm] RegisterDoctorImageRequest imageRequest, CancellationToken cancellationToken)
     {
         var authResult = await _authService.RegisterDoctorAsync(request, imageRequest, cancellationToken);
         return authResult.IsSuccess ? Ok() : authResult.ToProblem();
@@ -52,9 +50,9 @@ public class AuthController(IAuthService authService, IOptions<JwtOptions> JwtOp
         return isRevoked.IsSuccess ? Ok() : isRevoked.ToProblem();
 
     }
-  
 
- 
+
+
     [HttpPost("forget-password")]
 
     public async Task<IActionResult> ForgetPassword([FromBody] ForgetPasswordRequest request)
@@ -66,7 +64,7 @@ public class AuthController(IAuthService authService, IOptions<JwtOptions> JwtOp
 
     [HttpPost("reset-password")]
 
-    public async Task<IActionResult> ResetPassword([FromBody] Contracts.Authentication.ResetPasswordRequest request)
+    public async Task<IActionResult> ResetPassword([FromBody] Application.Contracts.Authentication.ResetPasswordRequest request)
     {
         var authResult = await _authService.ResetPasswordAsync(request);
         return authResult.IsSuccess ? Ok() : authResult.ToProblem();

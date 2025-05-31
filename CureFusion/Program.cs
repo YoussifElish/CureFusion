@@ -1,9 +1,9 @@
-﻿using Hangfire.Dashboard.BasicAuthorization;
-
+﻿using CureFusion.API.Helpers;
+using CureFusion.Application.Services;
+using CureFusion.Domain.Common;
 using Hangfire;
+using Hangfire.Dashboard.BasicAuthorization;
 using Serilog;
-using CureFusion.Helpers;
-using CureFusion.Settings;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,20 +31,20 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowMultipleOrigins", builder =>
     {
         builder
-            .WithOrigins("http://localhost:4200", "https://midical2222.vercel.app", "https://midical2222333.vercel.app") 
+            .WithOrigins("http://localhost:4200", "https://midical2222.vercel.app", "https://midical2222333.vercel.app")
             .AllowAnyMethod()
             .AllowAnyHeader();
     });
-}); 
+});
 
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
-    // Enable Swagger in development
-    app.UseSwagger();
-    app.UseSwaggerUI();
+// Enable Swagger in development
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();

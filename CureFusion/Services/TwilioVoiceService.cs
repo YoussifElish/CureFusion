@@ -1,8 +1,10 @@
-﻿using CureFusion.Settings;
+﻿using CureFusion.Application.Services;
+using CureFusion.Domain.Common;
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 using Twilio.Types;
-namespace CureFusion.Services;
+
+namespace CureFusion.API.Services;
 
 public class TwilioVoiceService : ITwilioVoiceService
 {

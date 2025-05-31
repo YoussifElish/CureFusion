@@ -1,22 +1,13 @@
-﻿using CureFusion.Contracts.Articles;
-using CureFusion.Contracts.Files;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using SurveyBasket.Abstactions;
+﻿using CureFusion.Application.Contracts.Articles;
+using CureFusion.Application.Services;
 
-namespace CureFusion.Controllers
+namespace CureFusion.API.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class ArticleController : ControllerBase
+    public class ArticleController(IArticleService articleService) : ControllerBase
     {
-        private readonly IArticleService _articleService;
-
-        public ArticleController(IArticleService articleService)
-        {
-            _articleService = articleService;
-        }
-
+        private readonly IArticleService _articleService = articleService;
 
         [HttpGet("GetAll")]
         public async Task<IActionResult> GetAllAsync([FromQuery] ArticleQueryParameters queryParams, CancellationToken cancellationToken)
@@ -35,18 +26,18 @@ namespace CureFusion.Controllers
 
 
         [HttpPost("Add")]
-        public async Task<IActionResult> AddAsync([FromQuery] CreateArticleRequest request,[FromForm] string Content, [FromForm] UploadImageRequest articleImage, [FromQuery] string authorId, CancellationToken cancellationToken)
+        public async Task<IActionResult> AddAsync([FromQuery] CreateArticleRequest request, [FromForm] string Content, [FromForm] UploadImageRequest articleImage, [FromQuery] string authorId, CancellationToken cancellationToken)
         {
-            var result = await _articleService.CreateArticleAsync(request,Content, articleImage, authorId, cancellationToken);
+            var result = await _articleService.CreateArticleAsync(request, Content, articleImage, authorId, cancellationToken);
             Console.WriteLine($"Generated ID: {result.Value!.Id}");
             return result.IsSuccess
                 ? Created($"/Article/{result.Value!.Id}", result.Value)
                 : result.ToProblem();
         }
 
-    
+
         [HttpPut("")]
-        public async Task<IActionResult> UpdateAsync([FromQuery] int id, [FromQuery] UpdateArticleRequest request, [FromForm] string Content,[FromForm] UploadImageRequest? articleImage, CancellationToken cancellationToken)
+        public async Task<IActionResult> UpdateAsync([FromQuery] int id, [FromQuery] UpdateArticleRequest request, [FromForm] string Content, [FromForm] UploadImageRequest? articleImage, CancellationToken cancellationToken)
         {
             var result = await _articleService.UpdateArticleAsync(id, Content, request, articleImage, cancellationToken);
             return result.IsSuccess
@@ -54,7 +45,7 @@ namespace CureFusion.Controllers
                 : result.ToProblem();
         }
 
-   
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync([FromRoute] int id, CancellationToken cancellationToken)
         {

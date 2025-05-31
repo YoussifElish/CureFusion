@@ -1,11 +1,6 @@
-﻿using CureFusion.Abstactions;
-using CureFusion.Abstactions.Consts;
-using CureFusion.Contracts.Answer;
-using CureFusion.Contracts.Common;
-using CureFusion.Entities;
-using CureFusion.Services;
+﻿using CureFusion.Application.Services;
 
-namespace CureFusion.Controllers;
+namespace CureFusion.API.Controllers;
 [Route("api/[controller]")]
 [Authorize]
 [ApiController]
@@ -38,7 +33,7 @@ public class AnswerController(IAnswerService answer) : ControllerBase
     [HttpPut("Update/{id}")]
     public async Task<IActionResult> Update([FromRoute] int QuestionId, [FromRoute] int id, [FromBody] AnswerRequest request, CancellationToken cancellationToken)
     {
-        var answer = await _answer.UpdateAnswerAsync(id, QuestionId, request , cancellationToken);
+        var answer = await _answer.UpdateAnswerAsync(id, QuestionId, request, cancellationToken);
         return answer.IsSuccess
             ? NoContent()
             : answer.ToProblem();
@@ -48,7 +43,7 @@ public class AnswerController(IAnswerService answer) : ControllerBase
     [HttpDelete("Delete/{id}")]
     public async Task<IActionResult> Delete([FromRoute] int QuestionId, [FromRoute] int Id, CancellationToken cancellationToken)
     {
-        var delete = await _answer.DeleteAnswerAsync(Id, QuestionId,  cancellationToken);
+        var delete = await _answer.DeleteAnswerAsync(Id, QuestionId, cancellationToken);
         return delete.IsSuccess
             ? NoContent()
             : delete.ToProblem();
@@ -72,7 +67,7 @@ public class AnswerController(IAnswerService answer) : ControllerBase
 
         var answer = await _answer.DownvoteDAnswerAsync(AnswerId, cancellationToken);
         return answer.IsSuccess
-            ? Ok()  
+            ? Ok()
             : answer.ToProblem();
     }
 }

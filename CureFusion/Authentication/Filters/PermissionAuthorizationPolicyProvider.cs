@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Options;
-using CureFusion.Authentication.Filters;
-
-namespace CureFusion.Authentication.Filters
+﻿namespace CureFusion.API.Authentication.Filters
 {
     public class PermissionAuthorizationPolicyProvider(IOptions<AuthorizationOptions> options) : DefaultAuthorizationPolicyProvider(options)
     {

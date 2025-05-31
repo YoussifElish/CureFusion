@@ -1,11 +1,10 @@
-﻿using MailKit.Net.Smtp;
+﻿using CureFusion.Domain.Common;
+using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.Extensions.Options;
 using MimeKit;
-using CureFusion.Settings;
 
-namespace SurveyBasket.Services
+namespace CureFusion.API.Services
 {
     public class EmailService(IOptions<MailSettings> mailSettings) : IEmailSender
     {

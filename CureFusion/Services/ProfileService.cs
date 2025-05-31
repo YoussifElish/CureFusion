@@ -1,7 +1,7 @@
-﻿using CureFusion.Contracts.Profile;
-using RealState.Services;
+﻿using CureFusion.Application.Contracts.Profile;
+using CureFusion.Application.Services;
 
-namespace CureFusion.Services;
+namespace CureFusion.API.Services;
 
 public class ProfileService : IProfileService
 {
@@ -168,7 +168,7 @@ public class ProfileService : IProfileService
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
             return Result.Failure(AuthErrors.NotFound);
-        
+
 
         var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
         return result.Succeeded ? Result.Success() : Result.Failure(AuthErrors.OperationFailed);
@@ -179,7 +179,7 @@ public class ProfileService : IProfileService
         if (userId == null)
             return Result.Failure(AuthErrors.InavlidUser);
 
-        if (expiryMinutes < 10 || expiryMinutes > 43200) 
+        if (expiryMinutes < 10 || expiryMinutes > 43200)
             return Result.Failure(SessionErrors.Invalid);
 
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
@@ -204,7 +204,7 @@ public class ProfileService : IProfileService
 
         // رفع الملف
         var uploadResult = await _fileService.UploadImagesAsync(imageFile, cancellationToken);
-       
+
 
         var uploadedFile = uploadResult;
 

@@ -1,24 +1,14 @@
-﻿namespace CureFusion.Helpers;
-
-using CureFusion.Abstactions;
-using CureFusion.Errors;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-
+﻿namespace CureFusion.API.Helpers;
+using CureFusion.Application.Services;
+using CureFusion.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using CureFusion.Persistence;
-public class SessionValidationMiddleware
-{
-    private readonly RequestDelegate _next;
-    private readonly IServiceScopeFactory _scopeFactory;
 
-    public SessionValidationMiddleware(RequestDelegate next, IServiceScopeFactory scopeFactory)
-    {
-        _next = next;
-        _scopeFactory = scopeFactory;
-    }
+public class SessionValidationMiddleware(RequestDelegate next, IServiceScopeFactory scopeFactory)
+{
+    private readonly RequestDelegate _next = next;
+    private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
 
     public async Task InvokeAsync(HttpContext context, ISessionService sessionService)
     {

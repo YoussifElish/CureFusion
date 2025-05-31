@@ -1,12 +1,6 @@
-﻿using CureFusion.Contracts.Common;
-using CureFusion.Contracts.Question;
-using CureFusion.Entities;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using SurveyBasket.Abstactions;
+﻿using CureFusion.Application.Services;
 
-namespace CureFusion.Controllers;
+namespace CureFusion.API.Controllers;
 [Route("api/[controller]")]
 [Authorize]
 [ApiController]
@@ -17,12 +11,12 @@ public class QuestionController(IQuestionService question) : ControllerBase
 
 
     [HttpGet("GetAll")]
-    public async Task<IActionResult> GetAllAsync([FromQuery] RequestFilter requestFilter,CancellationToken cancellationToken)
-    { 
-    var result = await _question.GetAllQuestion(requestFilter, cancellationToken);
+    public async Task<IActionResult> GetAllAsync([FromQuery] RequestFilter requestFilter, CancellationToken cancellationToken)
+    {
+        var result = await _question.GetAllQuestion(requestFilter, cancellationToken);
         return result.IsSuccess
             ? Ok(result.Value)
-            :result.ToProblem();
+            : result.ToProblem();
     }
 
     [HttpGet("GetAsync/{id}")]
@@ -35,7 +29,7 @@ public class QuestionController(IQuestionService question) : ControllerBase
     }
 
     [HttpPost("CreateAsync")]
-    public async Task<IActionResult> CreateAsync([FromBody ] QuestionRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateAsync([FromBody] QuestionRequest request, CancellationToken cancellationToken)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);//fetishch the user id from the token
 
@@ -68,7 +62,7 @@ public class QuestionController(IQuestionService question) : ControllerBase
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);//fetishch the user id from the token
 
-        var answer = await _question.UpvoteQuestionAsync(QuestionId , cancellationToken);
+        var answer = await _question.UpvoteQuestionAsync(QuestionId, cancellationToken);
         return answer.IsSuccess
             ? Ok()
             : answer.ToProblem();

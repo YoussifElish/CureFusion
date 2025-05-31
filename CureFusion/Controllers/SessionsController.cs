@@ -1,7 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using CureFusion.Application.Services;
 
-namespace CureFusion.Controllers
+namespace CureFusion.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -33,6 +32,6 @@ namespace CureFusion.Controllers
             var result = await _sessionService.TerminateAllSessionsAsync(cancellationToken);
             return result.IsSuccess ? Ok(new { terminated = result.Value }) : result.ToProblem();
         }
-    
-}
+
+    }
 }

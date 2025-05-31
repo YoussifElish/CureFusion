@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-
-namespace CureFusion.Authentication.Filters
+﻿namespace CureFusion.API.Authentication.Filters
 {
     public class PermissionRequirment(string permission) : IAuthorizationRequirement
     {

@@ -2,33 +2,16 @@
 // Updated GetDoctorDetailsAsync to use StoredFileName directly from UploadedFile entity.
 // Updated GetPatientsAsync and GetAppointmentsAsync to fix type conversion errors and correctly handle Patient as User.
 
-using CureFusion.Abstactions;
-using CureFusion.Contracts.Admin;
-using CureFusion.Contracts.Common;
-using CureFusion.Entities;
-using CureFusion.Enums;
-using CureFusion.Errors; // Assuming common errors are defined here
-using Mapster;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using System.Linq.Dynamic.Core;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using CureFusion.Application.Contracts.Admin;
+using CureFusion.Application.Services;
 
-namespace CureFusion.Services;
+namespace CureFusion.API.Services;
 
-public class AdminService : IAdminService
+public class AdminService(ApplicationDbContext context, UserManager<ApplicationUser> userManager) : IAdminService
 {
-    private readonly ApplicationDbContext _context;
-    private readonly UserManager<ApplicationUser> _userManager;
-
-    public AdminService(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
-    {
-        _context = context;
-        _userManager = userManager;
-    }
+    private readonly ApplicationDbContext _context = context;
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
 
     // --- Dashboard --- 
     public async Task<Result<DashboardStatsDto>> GetDashboardStatsAsync(CancellationToken cancellationToken)

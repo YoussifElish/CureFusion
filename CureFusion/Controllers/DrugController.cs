@@ -1,56 +1,50 @@
-using CureFusion.Abstactions.Consts;
-using CureFusion.Contracts.Articles;
-using CureFusion.Contracts.Files;
-using CureFusion.Contracts.Medicine;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using SurveyBasket.Abstactions;
+using CureFusion.Application.Contracts.Articles;
+using CureFusion.Application.Services;
 
 
-namespace CureFusion.Controllers;
+namespace CureFusion.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
 public class DrugController(IDrugService drug) : ControllerBase
 {
-  
 
-        private readonly IDrugService _drug = drug;
 
-        [HttpGet("GetALl")]
-        public async Task<IActionResult> GetAllasync([FromQuery] DrugQueryParameters drugQueryParameters ,CancellationToken cancellationToken)
-        {
-            var Result = await _drug.GetAllDrugsAsync(drugQueryParameters, cancellationToken);
-            return Result.IsSuccess ? Ok(Result.Value) : Result.ToProblem();
-          
-        }
-    
-    [HttpGet("{id}")]
-    public async Task<IActionResult> Getasync([FromRoute]int id,CancellationToken cancellationToken)
+    private readonly IDrugService _drug = drug;
+
+    [HttpGet("GetALl")]
+    public async Task<IActionResult> GetAllasync([FromQuery] DrugQueryParameters drugQueryParameters, CancellationToken cancellationToken)
     {
-        var Result = await _drug.GetDrugAsync(id,cancellationToken);
+        var Result = await _drug.GetAllDrugsAsync(drugQueryParameters, cancellationToken);
+        return Result.IsSuccess ? Ok(Result.Value) : Result.ToProblem();
+
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> Getasync([FromRoute] int id, CancellationToken cancellationToken)
+    {
+        var Result = await _drug.GetDrugAsync(id, cancellationToken);
         return Result.IsSuccess
             ? Ok(Result.Value)
             : Result.ToProblem();
-    
+
     }
     //[Authorize(Roles = $"{DefaultRoles.Admin},{DefaultRoles.Doctor}")]
     [HttpPost("Add")]
     public async Task<IActionResult> AddAsync([FromForm] DrugRequest Request, [FromForm] UploadImageRequest drugImage, CancellationToken cancellationToken)
     {
         var Result = await _drug.AddDrugAsync(Request, drugImage, cancellationToken);
-        return Result.IsSuccess 
-            ? CreatedAtAction(nameof(Getasync), new { id = Result.Value!.Id },Result.Value)
+        return Result.IsSuccess
+            ? CreatedAtAction(nameof(Getasync), new { id = Result.Value!.Id }, Result.Value)
             : Result.ToProblem();
 
     }
     [Authorize(Roles = $"{DefaultRoles.Admin},{DefaultRoles.Doctor}")]
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateAsync([FromRoute] int id,[FromBody] DrugRequest Request, CancellationToken cancellationToken)
+    public async Task<IActionResult> UpdateAsync([FromRoute] int id, [FromBody] DrugRequest Request, CancellationToken cancellationToken)
     {
-        var Result = await _drug.UpdateDrugAsync(id,Request, cancellationToken);
-        return Result.IsSuccess 
+        var Result = await _drug.UpdateDrugAsync(id, Request, cancellationToken);
+        return Result.IsSuccess
             ? NoContent()
             : Result.ToProblem();
         //i will check it again 
@@ -64,7 +58,7 @@ public class DrugController(IDrugService drug) : ControllerBase
         return Result.IsSuccess
             ? NoContent()
             : Result.ToProblem();
-     
+
 
     }
 }
