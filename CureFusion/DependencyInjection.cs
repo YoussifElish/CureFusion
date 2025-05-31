@@ -41,6 +41,8 @@ public static class DependencyInjection
         services.AddScoped<IDrugService, DrugService>();
         services.AddScoped<IQuestionService, QuestionService>();
         services.AddScoped<IAnswerService, AnswerService>();
+        services.AddScoped<IGeoCodingService, GeocodingService>();
+        services.AddScoped<IGeoapifyService, GeoapifyService>();
         services.AddScoped<IDoctorService, DoctorService>();
         services.AddScoped<IEmailSender, EmailService>();
         services.AddScoped<IArticleService, ArticleService>();
@@ -55,7 +57,11 @@ public static class DependencyInjection
            .ValidateOnStart();
 
         services.Configure<MailSettings>(config.GetSection(nameof(MailSettings)));
+        services.Configure<GeocodingOptions>(config.GetSection("Geocoding")); 
+        services.Configure<GeoapifyOptions>(config.GetSection("Geoapify"));
+
         return services;
+
     }
 
 

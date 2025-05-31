@@ -16,5 +16,12 @@ public class PageinatedList<T>(List<T> items, int pageNumber, int count, int pag
         return new PageinatedList<T>(items, pagenumber, count, pagesize);
     }
 
+    public static PageinatedList<T> Create(List<T> source, int pageNumber, int pageSize)
+    {
+        var count = source.Count;
+        var items = source.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+        return new PageinatedList<T>(items, pageNumber, count, pageSize);
+    }
+    //34an al hospital shghala in memory fa mynf34 iquearyable
 }
 

@@ -51,6 +51,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Contracts\Hospital\" />
     <Folder Include="Extensions\" />
     <Folder Include="wwwroot\uploads\" />
   </ItemGroup>
