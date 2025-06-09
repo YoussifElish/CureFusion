@@ -1,5 +1,6 @@
 ﻿using CureFusion.API.Authentication.Filters;
 using CureFusion.Application.Authentication;
+using CureFusion.Application.Interfaces;
 using CureFusion.Application.Services;
 using CureFusion.Domain.Common;
 using CureFusion.Services;
@@ -39,6 +40,8 @@ public static class DependencyInjection
         services.AddScoped<IDrugService, DrugService>();
         services.AddScoped<IQuestionService, QuestionService>();
         services.AddScoped<IAnswerService, AnswerService>();
+        services.AddScoped<IGeocodingService, GeocodingService>();
+        services.AddScoped<IGeoapifyService, GeoapifyService>();
         services.AddScoped<IDoctorService, DoctorService>();
         services.AddScoped<IEmailSender, EmailService>();
         services.AddScoped<IArticleService, ArticleService>();
@@ -52,6 +55,9 @@ public static class DependencyInjection
            .ValidateOnStart();
 
         services.Configure<MailSettings>(config.GetSection(nameof(MailSettings)));
+        services.Configure<GeocodingOptions>(config.GetSection("Geocoding")); 
+        services.Configure<GeoapifyOptions>(config.GetSection("Geoapify"));
+       
         return services;
     }
 

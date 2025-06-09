@@ -15,6 +15,7 @@ builder.Services.AddDependencies(builder.Configuration);
 builder.Services.AddScoped<PaymobService>();
 builder.Services.AddHttpClient<PaymobService>();
 
+
 builder.Host.UseSerilog((context, configuration) =>
 configuration.ReadFrom.Configuration(context.Configuration)
 );
