@@ -74,6 +74,7 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
         if (emailIsExist)
             return Result.Failure(AuthErrors.DuplicatedEmail);
         var user = request.Adapt<ApplicationUser>();
+        user.UserName = request.Email;
         user.EmailConfirmed = true;
         user.PhoneNumber = request.PhoneNumber;
         var result = await _userManager.CreateAsync(user, request.Password);

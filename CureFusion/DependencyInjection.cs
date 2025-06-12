@@ -1,4 +1,5 @@
 ﻿using CureFusion.API.Authentication.Filters;
+using CureFusion.API.Mapping;
 using CureFusion.Application.Authentication;
 using CureFusion.Application.Interfaces;
 using CureFusion.Application.Services;
@@ -95,7 +96,7 @@ public static class DependencyInjection
     private static IServiceCollection AddMapsterConfig(this IServiceCollection services)
     {
         var mappingConfig = TypeAdapterConfig.GlobalSettings;
-        mappingConfig.Scan(Assembly.GetExecutingAssembly());
+        mappingConfig.Scan(Assembly.GetAssembly(typeof(MappingConfigurations)));
         services.AddSingleton<IMapper>(new Mapper(mappingConfig));
 
         return services;

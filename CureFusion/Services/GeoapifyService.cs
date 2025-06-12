@@ -51,7 +51,7 @@ namespace CureFusion.API.Services;
 
             };
 
-hospitals.Add(hospital);
+        hospitals.Add(hospital);
            
          
         }

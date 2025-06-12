@@ -42,7 +42,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<UploadedFile> UploadedFiles { get; set; }
     public DbSet<Subscription> subscriptions { get; set; }
     public DbSet<SubscriptionPlan> subscriptionPlans { get; set; }
-    public DbSet<Hospital> hospitals { get; set; }
+
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
